@@ -1,0 +1,223 @@
+<html>
+<head>
+    <title>Mesecina3d User Manual</title>
+</head>
+<body>
+    <h1>
+        <a name="top">Mesecina3d User Manual</a></h1>
+    <p>
+        <i>A software to visualize and study the medial axis and related computational geometry
+            structures</i>
+    </p>
+    <hr />
+    <p>
+        <font size="+1"><b><a href="#general">1. General</a><br>
+            <a href="#navigation">2. Mouse and Navigation</a><br>
+            <a href="#layer_bundles">3. Layers and Bundles</a><br />
+            <a href="#slider">4. Evolution sliders</a> </b></font>
+    </p>
+    <hr>
+    <h2>
+        <a name="general">1. General</a></h2>
+    <p>
+        Main sections of the Mesecina user interface:
+    </p>
+    <ul>
+        <li><b>Vizualization widget</b> - the biggest part of the main window, is a viewport
+            to a scene in which one can navigate to study the geometric structures.</li>
+        <li><b>Layers</b> - a list of available geometric structures which can be included in
+            the scene. Whenever a layer is checked, the corresponding geometric structures are
+            going to be introduced in the scene. They are computed lazilly, the first time they
+            are requested, but after that they are stored in the memory for fast interaction. 
+            There is a special layer, called "cutting plane" which effects the display of every
+            other layer situated after it in the layer list. The cutting plane layer has a plane
+            position and width, and allows the visualization of only of a "slice" of the 
+            structures which are affected by it.</li>
+        <li><b>Bundles</b> - bundles are collections of layers. They are means to store scene
+            settings which are often used. By clicking on a bundle one can activate it and set
+            the layer configuration which was saved into the bundle</li>
+        <li><b>Slider</b> - the big slider on the top is used for procedural manipulation of
+            the geometric structures. One can use an evolution in the combo box and then use
+            the slider to apply the corresponding evolution on the geometries. Again lazy computation
+            is available, only layers which are selected are going to be computed, but at any
+            time one can compute additional structures using the</li>
+        <li><b>Record</b> - the menu and the button on the top of the main window allows you
+            export images, or sequences of images of the scene which is currently viewed</li>
+        <li><b>Kernel</b> - one can choose the arithmetic kernel used for all geometric algorithms.
+            The double is faste but certain algorithm will fail returning a useful result. The
+            CORE::Expr kernel's exact arithmetic is slower but computes precise results.</li>
+    </ul>
+    <p>
+        Note that you can resize all the sections of the mainwindow by moving the splitter
+        edges. All your settings regarding window positions, sizes, splitters will be saved
+        between application settings
+    </p>
+    <hr />
+    <div align="right">
+        <a href="#top">Top ^</a></div>
+    <h2>
+        <a name="navigation">2. Mouse and Navigation</a>
+    </h2>
+    <p>
+        Navigation, point insertion and manipulation are all done with the mouse and the
+        CTRL, ALT, SHIFT button combinations. This allows for very fast control of the application
+        as soon as one got used to the controls.
+    </p>
+    <h3>
+        2.1. Navigation (mouse)</h3>
+    <table>
+        <tr>
+            <td width="195">
+                left button + mouse movements</td>
+            <td>
+                rotate</td>
+        </tr>
+        <tr>
+            <td>
+                right button + mouse movements</td>
+            <td>
+                pan</td>
+        </tr>
+        <tr>
+            <td>
+                middle button + mouse movements</td>
+            <td>
+                zoom in/out</td>
+        </tr>
+        <tr>
+            <td>
+                left double click</td>
+            <td>
+                zoom in to a region clicked on (and center rotation there)</td>
+        </tr>
+        <tr>
+            <td>
+                right double click</td>
+            <td>
+                zoom out to the whole scene (and recenter rotation to scene middle point)</td>
+        </tr>
+        <tr>
+            <td>
+                right button + left double click</td>
+            <td>
+                set rotation center to custom location</td>
+        </tr>
+        <tr>
+            <td>
+                left button + right double click</td>
+            <td>
+                set rotation center to scene middle point</td>
+        </tr>
+        <tr>
+            <td>
+                A key</td>
+            <td>
+                show/hide coordinate axis</td>
+        </tr>
+        <tr>
+            <td>
+                G key</td>
+            <td>
+                show/hide grid in the xOy plane</td>
+        </tr>
+        <tr>
+            <td>
+                ALT + left double click</td>
+            <td>
+                align view to the closest coordinate axis</td>
+        </tr>
+                
+    </table>
+    <h3>
+        2.2. Cut plane (active only if cutting plane layer is active)</h3>
+    <table>
+        <tr>
+            <td width="195">
+                CTRL + left button + mouse movements</td>
+            <td>
+                rotate cutting plane</td>
+        </tr>
+        <tr>
+            <td>
+                CTRL + right button + mouse movements</td>
+            <td>
+                move cutting plane</td>
+        </tr>
+        <tr>
+            <td>
+                CTRL + left double click</td>
+            <td>
+                align cutting plane to the nearest coordinate axis
+                </td>
+        </tr>
+    </table>
+    <hr />
+    <div align="right">
+        <a href="#top">Top ^</a></div>
+    <h2>
+        <a name="layer_bundles">3. Layers and Bundles </a>
+    </h2>
+    <p>
+        Layers represent geometric structures and when they are checked then they are visualized
+        in the scene. If the structures needed for the layer are not available in the memory
+        they will be computed when the used checkes them in. Notice that layers which were
+        already computed and are in the memory will be displayed with darker color in the
+        layer's list.
+    </p>
+    <p>
+        One can change the properties od the layers by rightclicking on their name and using
+        the available options. One can change color, opacity, point size, line width and
+        such properties.
+    </p>
+    <p>
+        The order of the layers determine in which order are they rendered in the scene.
+        The lower a layer is in the list the later it will be rendered, therefore the "closer"
+        it will be the user. Use <b>SHIFT + drag and drop on the list to reorder layers</b>.
+    </p>
+    <p>
+        After configuring a scene with several layers and properties one can save the whole
+        configuration in a bundle for later use. For this use the combo box and the button
+        on the bottom of the layers list. Once a bundle saved it will be introduced in the
+        bundles list and saved on the hard disk, so one can use bundles across application
+        sessions. To activate a layer simply click on it in the bundles list. One can <b>reorder</b>
+        (SHIFT + drag and drop) or <b>rename bundles</b> (doubleclick on the name). Right
+        clicking on a bundle brings up a context menu, where one can <b>delete</b> or <b>export</b>
+        a bundle to a file.
+    </p>
+    <p>
+        One can import bundles from files in the Bundle -> Import bundles... menu, or one
+        can export all available bundles using Bundles -> Export bundles...
+    </p>
+    <hr />
+    <div align="right">
+        <a href="#top">Top ^</a></div>
+
+
+    <h2>
+        <a name="slider">4. Evolution Sliders</a></h2>
+    <p>
+        The slider allows to study evolution of the structures when certain operations are
+        applied on primitives. The combobox value specifies which evolution does the slider
+        refer to the slider controls which step of the evolution do we see currently in
+        the visualization widget.
+    </p>
+    <p>
+        The <b>textfield on the right</b> allows to change the <b>resolution</b> of the
+        slider. The two buttons will move automatically the slider to the current maximum
+        left or right location on the slider. It can be used to trigger batch computations
+        or view animations after structures have been computed.
+        <br>
+    </p>
+    <p>
+        Note the <b>initial dataset for all evolution is the same</b> , the last state before
+        the first evolution step computed. Whenever a dataset is changed (move, delete,
+        insert) the slider will be reset, all the evolutions are lost.
+    </p>
+    <hr /><div align="right"><a href="#top">Top ^</a></div>
+    <p>
+        Check for latest update on http://www.agg.ethz.ch/~miklosb/mesecina/<br />
+        B&aacute;lint Mikl&oacute;s, Applied Geometry Group, ETH Zurich<br>
+        December 17th, 2007
+    </p>
+</body>
+</html>

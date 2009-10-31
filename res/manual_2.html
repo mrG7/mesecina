@@ -1,0 +1,426 @@
+<html>
+<head>
+    <title>Mesecina2d User Manual</title>
+</head>
+<body>
+    <h1>
+        <a name="top">Mesecina2d User Manual</a></h1>
+    <p>
+        <i>A software to visualize and study the medial axis and related computational geometry
+            structures</i>
+    </p>
+    <hr />
+    <p>
+        <font size="+1"><b><a href="#general">1. General</a><br>
+            <a href="#navigation">2. Mouse and Navigation</a><br>
+            <a href="#layer_bundles">3. Layers and Bundles</a><br />
+            <a href="#layer_list">4. List of Layers</a><br />
+            <a href="#slider">5. Evolution sliders</a> </b></font>
+    </p>
+    <hr>
+    <h2>
+        <a name="general">1. General</a></h2>
+    <p>
+        Main sections of the Mesecina user interface:
+    </p>
+    <ul>
+        <li><b>Vizualization widget</b> - the biggest part of the main window, is a viewport
+            to a scene in which one can navigate to study the geometric structures.</li>
+        <li><b>Layers</b> - a list of available geometric structures which can be included in
+            the scene. Whenever a layer is checked, the corresponding geometric structures are
+            going to be introduced in the scene. They are computed lazilly, the first time they
+            are requested, but after that they are stored in the memory for fast interaction.</li>
+        <li><b>Bundles</b> - bundles are collections of layers. They are means to store scene
+            settings which are often used. By clicking on a bundle one can activate it and set
+            the layer configuration which was saved into the bundle</li>
+        <li><b>Slider</b> - the big slider on the top is used for procedural manipulation of
+            the geometric structures. One can use an evolution in the combo box and then use
+            the slider to apply the corresponding evolution on the geometries. Again lazy computation
+            is available, only layers which are selected are going to be computed, but at any
+            time one can compute additional structures using the</li>
+        <li><b>Record</b> - the menu and the button on the top of the main window allows you
+            export images, or sequences of images of the scene which is currently viewed</li>
+        <li><b>Kernel</b> - one can choose the arithmetic kernel used for all geometric algorithms.
+            The double is faste but certain algorithm will fail returning a useful result. The
+            CORE::Expr kernel's exact arithmetic is slower but computes precise results.</li>
+    </ul>
+    <p>
+        Note that you can resize all the sections of the mainwindow by moving the splitter
+        edges. All your settings regarding window positions, sizes, splitters will be saved
+        between application settings
+    </p>
+    <hr />
+    <div align="right">
+        <a href="#top">Top ^</a></div>
+    <h2>
+        <a name="navigation">2. Mouse and Navigation</a>
+    </h2>
+    <p>
+        Navigation, point insertion and manipulation are all done with the mouse and the
+        CTRL, ALT, SHIFT button combinations. This allows for very fast control of the application
+        as soon as one got used to the controls
+    </p>
+    <h3>
+        2.1. Navigation (mouse + CTRL)</h3>
+    <table>
+        <tr>
+            <td width="195">
+                CTRL + left drag</td>
+            <td>
+                pan</td>
+        </tr>
+        <tr>
+            <td>
+                CTRL + right drag</td>
+            <td>
+                zoom in/out</td>
+        </tr>
+        <tr>
+            <td>
+                CTRL + middle drag</td>
+            <td>
+                zoom to a region of the screen smoothly</td>
+        </tr>
+        <tr>
+            <td>
+                CTRL + middle click</td>
+            <td>
+                zoom to bounding box smoothly</td>
+        </tr>
+        <tr>
+            <td>
+                CTRL + ALT + middle drag</td>
+            <td>
+                zoom to a region of the screen instantly</td>
+        </tr>
+        <tr>
+            <td>
+                CTRL + ALT + middle click</td>
+            <td>
+                zoom to bounding box instantly</td>
+        </tr>
+    </table>
+    <h3>
+        2.2. Point insertion</h3>
+    <table>
+        <tr>
+            <td width="195">
+                left click</td>
+            <td>
+                insert a single point</td>
+        </tr>
+        <tr>
+            <td>
+                middle drag</td>
+            <td>
+                "spray" points along the path of the mouse</td>
+        </tr>
+        <tr>
+            <td>
+                ALT + left click or left drag</td>
+            <td>
+                same as above above but the actual computation on the geometry structures is deferred
+                until ALT is released</td>
+        </tr>
+    </table>
+    <h3>
+        2.3. Selection and modification (mouse + SHIFT)</h3>
+    <table>
+        <tr>
+            <td width="195">
+                SHIFT + left click on a point</td>
+            <td>
+                select/deselect that point</td>
+        </tr>
+        <tr>
+            <td>
+                SHIFT + middle drag</td>
+            <td>
+                add points in a rectangular region to selection</td>
+        </tr>
+        <tr>
+            <td>
+                CTRL + SHIFT + left drag</td>
+            <td>
+                move selection with continuous update</td>
+        </tr>
+        <tr>
+            <td>
+                ALT + CTRL + SHIFT + left drag</td>
+            <td>
+                move selection with update only on release of ALT</td>
+        </tr>
+        <tr>
+            <td>
+                DEL or backspace</td>
+            <td>
+                delete selection</td>
+        </tr>
+    </table>
+    <hr />
+    <div align="right">
+        <a href="#top">Top ^</a></div>
+    <h2>
+        <a name="layer_bundles">3. Layers and Bundles </a>
+    </h2>
+    <p>
+        Layers represent geometric structures and when they are checked then they are visualized
+        in the scene. If the structures needed for the layer are not available in the memory
+        they will be computed when the used checkes them in. Notice that layers which were
+        already computed and are in the memory will be displayed with darker color in the
+        layer's list.
+    </p>
+    <p>
+        One can change the properties od the layers by rightclicking on their name and using
+        the available options. One can change color, opacity, point size, line width and
+        such properties.
+    </p>
+    <p>
+        The order of the layers determine in which order are they rendered in the scene.
+        The lower a layer is in the list the later it will be rendered, therefore the "closer"
+        it will be the user. Use <b>SHIFT + drag and drop on the list to reorder layers</b>.
+    </p>
+    <p>
+        After configuring a scene with several layers and properties one can save the whole
+        configuration in a bundle for later use. For this use the combo box and the button
+        on the bottom of the layers list. Once a bundle saved it will be introduced in the
+        bundles list and saved on the hard disk, so one can use bundles across application
+        sessions. To activate a layer simply click on it in the bundles list. One can <b>reorder</b>
+        (SHIFT + drag and drop) or <b>rename bundles</b> (doubleclick on the name). Right
+        clicking on a bundle brings up a context menu, where one can <b>delete</b> or <b>export</b>
+        a bundle to a file.
+    </p>
+    <p>
+        One can import bundles from files in the Bundle -> Import bundles... menu, or one
+        can export all available bundles using Bundles -> Export bundles...
+    </p>
+    <hr />
+    <div align="right">
+        <a href="#top">Top ^</a></div>
+    <h2>
+        <a name="layer_list">4. List of Layers</a></h2>
+    <p>
+        Here is a list of layers available and explanation of what they mean. Some layers
+        are prefixed with A or P. These are layers which are computed based on the set of
+        poles of all voronoi vertices/balls. A refers to all voronoi vertices/balls, P refers
+        to polar vertices/balls.
+    </p>
+    <p>
+        &nbsp;</p>
+    <table>
+        <tr>
+            <td width="155" valign="middle">
+                <b>Points</b></td>
+            <td>
+                Set of input points</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>Image</b></td>
+            <td>
+                A loaded image centered in the origin of the coordinate system.</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>Voronoi</b></td>
+            <td>
+                Voronoi diagram of the input points. (shown as edges)</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>Delaunay</b></td>
+            <td>
+                Delaunay triangulation of the input points. (shown as edges)</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P inner vertices</b></td>
+            <td>
+                Voronoi vertices/poles classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P inner circles</b></td>
+            <td>
+                Voronoi circles corresponding to voronoi vertices/poles classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P inner disks</b></td>
+            <td>
+                Voronoi disks corresponding to voronoi vertices/poles classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P regular triangulation</b></td>
+            <td>
+                Regular triangulation of voronoi balls corresponding to all voronoi vertices/poles</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P power diagram</b></td>
+            <td>
+                Power diagram of voronoi balls corresponding to all voronoi vertices/poles</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>Power crust</b></td>
+            <td>
+                Power diagram edges separating interior and exterior poles (only finite poles)</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>Voronoi crust</b></td>
+            <td>
+                Voronoi edges separating separating interior and exterior voronoi vertices (including
+                infinite voronoi vertices)</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>Local crust</b></td>
+            <td>
+                Voronoi edges identified as curve reconstruction computed by the one-step algorith
+                using only local tests on Delaunay/Voronoi edges
+            </td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P inner ball triangulation</b></td>
+            <td>
+                Regular triangulation of voronoi balls corresponding to voronoi vertices/poles classified
+                as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P dual faces</b></td>
+            <td>
+                Dual faces of union of voronoi balls corresponding to voronoi vertices/poles classified
+                as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P dual singular edges</b></td>
+            <td>
+                Dual singular edges of union of voronoi balls corresponding to voronoi vertices/poles
+                classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P dual regular edges</b></td>
+            <td>
+                Dual regular edges of union of voronoi balls corresponding to voronoi vertices/poles
+                classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P dual interior edges</b></td>
+            <td>
+                Dual interior edges of union of voronoi balls corresponding to voronoi vertices/poles
+                classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P V points</b></td>
+            <td>
+                Vertices on the boundary of union of voronoi balls corresponding to voronoi vertices/poles
+                classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P V voronoi</b></td>
+            <td>
+                Voronoi diagram of V points of the union of voronoi balls corresponding to voronoi
+                vertices/poles classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P V origin triangle</b></td>
+            <td>
+                Triangle illustrating the V point and its corresponding regular dual edge in the
+                union of voronoi balls corresponding to voronoi vertices/poles classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P V origin edge</b></td>
+            <td>
+                Edge illustrating the V point and its corresponding regular dual edge in the union
+                of voronoi balls corresponding to voronoi vertices/poles classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P V crossing edges</b></td>
+            <td>
+                V Voronoi edges identified as crossing through the dual of the union of voronoi
+                balls corresponding to voronoi vertices/poles classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P V alpha edges</b></td>
+            <td>
+                V Voronoi edges identified as alpha (singular edges in dual) of the union of voronoi
+                balls corresponding to voronoi vertices/poles classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A/P ball medial axis</b></td>
+            <td>
+                Medial axis of of the union of voronoi balls corresponding to voronoi vertices/poles
+                classified as interior</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A medial axis</b></td>
+            <td>
+                Inner voronoi diagram = Medial axis of of the union of voronoi balls corresponding
+                to inner voronoi vertices. Computed with modified power crust algorithm by using
+                poles</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>A onestep medial axis</b></td>
+            <td>
+                Inner voronoi diagram = Medial axis of of the union of voronoi balls corresponding
+                to inner voronoi vertices. Computed with one-step algorith using only local tests
+                on Delaunay/Voronoi edges.</td>
+        </tr>
+        <tr>
+            <td valign="middle">
+                <b>Full medial axis</b></td>
+            <td>
+                Inner and outer medial axis approximation computed as subset of voronoi diagram.
+                Computed with one-step algorith using only local tests on Delaunay/Voronoi edges</td>
+        </tr>
+    </table>
+    <hr /><div align="right"><a href="#top">Top ^</a></div>
+
+
+
+
+    <h2>
+        <a name="slider">5. Evolution Sliders</a></h2>
+    <p>
+        The slider allows to study evolution of the structures when certain operations are
+        applied on primitives. The combobox value specifies which evolution does the slider
+        refer to the slider controls which step of the evolution do we see currently in
+        the visualization widget.
+    </p>
+    <p>
+        The <b>textfield on the right</b> allows to change the <b>resolution</b> of the
+        slider. The two buttons will move automatically the slider to the current maximum
+        left or right location on the slider. It can be used to trigger batch computations
+        or view animations after structures have been computed.
+        <br>
+    </p>
+    <p>
+        Note the <b>initial dataset for all evolution is the same</b> , the last state before
+        the first evolution step computed. Whenever a dataset is changed (move, delete,
+        insert) the slider will be reset, all the evolutions are lost.
+    </p>
+    <hr /><div align="right"><a href="#top">Top ^</a></div>
+    <p>
+        Check for latest update on http://www.agg.ethz.ch/~miklosb/mesecina/<br />
+        B&aacute;lint Mikl&oacute;s, Applied Geometry Group, ETH Zurich<br>
+        May 20th, 2007
+    </p>
+</body>
+</html>

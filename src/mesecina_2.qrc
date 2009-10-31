@@ -1,0 +1,33 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource>
+    <file alias="manual.html">../res/manual_2.html</file>
+    <file alias="standard.bnd">../res/standard_2.bnd</file>
+    <file alias="perlin.png">../res/perlin.png</file>
+    <file alias="pencil.vert">../res/pencil.vert</file>
+    <file alias="pencil.frag">../res/pencil.frag</file>
+    <file alias="paper.png">../res/paper.png</file>
+  </qresource>
+  <qresource prefix="/colormap">
+    <file alias="Autumn.map">../res/colormap/Autumn.map</file>
+    <file alias="Autumn.png">../res/colormap/Autumn.png</file>
+    <file alias="Cool.map">../res/colormap/Cool.map</file>
+    <file alias="Cool.png">../res/colormap/Cool.png</file>    
+    <file alias="Copper.map">../res/colormap/Copper.map</file>
+    <file alias="Copper.png">../res/colormap/Copper.png</file>
+    <file alias="Gray.map">../res/colormap/Gray.map</file>
+    <file alias="Gray.png">../res/colormap/Gray.png</file>
+    <file alias="Hot.map">../res/colormap/Hot.map</file>
+    <file alias="Hot.png">../res/colormap/Hot.png</file>
+    <file alias="Hsv.map">../res/colormap/Hsv.map</file>
+    <file alias="Hsv.png">../res/colormap/Hsv.png</file>    
+    <file alias="Jet.map">../res/colormap/Jet.map</file>
+    <file alias="Jet.png">../res/colormap/Jet.png</file>
+    <file alias="Spring.map">../res/colormap/Spring.map</file>
+    <file alias="Spring.png">../res/colormap/Spring.png</file>    
+    <file alias="Summer.map">../res/colormap/Summer.map</file>
+    <file alias="Summer.png">../res/colormap/Summer.png</file>
+    <file alias="Winter.map">../res/colormap/Winter.map</file>
+    <file alias="Winter.png">../res/colormap/Winter.png</file>
+  </qresource>
+</RCC>

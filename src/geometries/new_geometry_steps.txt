@@ -1,0 +1,10 @@
+How to create a new geometry?
+
+1. Use the template from dummy_2, renaming the directory, files, stuff in the project file, and MESECINAVERSION
+2. Add correspoinding line to the update_project_files.bat in the win directory
+3. Update the GUID in the pro file
+4. Add to solution file, and click project dependencies:
+    * new geometry depends on static and gl_widget_2
+    * main application depends on new geometry
+5. Add to mesecina2d.pro the new lib to be linked.
+6. Add to Geometry_factory.cpp the include files and the instatiation the way you wanted for the right dimension.
