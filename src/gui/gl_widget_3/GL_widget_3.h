@@ -97,6 +97,8 @@ public:
 public slots:
 	void repaintGL();
 	virtual void resizeGL( int w, int h );
+	void save_view(bool);
+	void load_view(bool);
 	// the selection slots below retransmit everything to the layers
 
 signals:

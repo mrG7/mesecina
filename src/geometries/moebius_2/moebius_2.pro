@@ -10,7 +10,7 @@ win32 {
 SOURCES += *.cpp
 
 HEADERS += *.h \
-		   layers/*.h 	   
+		   layers/*.h 
 
 include(../geometry_2.pro)
 

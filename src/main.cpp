@@ -35,8 +35,11 @@ int main(int argc, char* argv[]) {
 	//extern std::vector<QString> Application_settings::setting_tooltips;
 	//extern std::vector<Application_setting_type> Application_settings::setting_types;
 
+	std::cout << "I am doing something" << std::endl;
 	if (argc > 1) {
+		std::cout << "argc > 1" << std::endl;
 		if (QString(argv[1]) == "--nogui") {
+			std::cout << "nogui" << std::endl;
 			app_name = QString(APPLICATION_NAME) + "-console";
 			QCoreApplication::setOrganizationName(COMPANY_NAME);
 		    QCoreApplication::setApplicationName(app_name);
@@ -49,10 +52,14 @@ int main(int argc, char* argv[]) {
 #endif
 			return 1;
 		}
-		else
+		else {
+			std::cout << "gui" << std::endl;
 			app_name =QString(APPLICATION_NAME)+"-"+QString(argv[1]);
+		}
 	}
 	else 
+	std::cout << "argc <= 1" << std::endl;
+
 #ifdef MESECINA_PUBLIC_RELEASE
 		app_name = QString(APPLICATION_NAME)+"-"+QString("public");
 #else
@@ -66,11 +73,13 @@ int main(int argc, char* argv[]) {
 
 	QApplication app(argc, argv);
 //	Q_INIT_RESOURCE(mesecina);
+	std::cout << "app constructor" << std::endl;
 
 	QGLFormat fmt;
 	fmt.setAlpha(true);
 	fmt.setSampleBuffers(true);
 	QGLFormat::setDefaultFormat(fmt);
+	std::cout << "opengl things" << std::endl;
 		
 	Main_window w(800,600,app_name);
 	w.show();

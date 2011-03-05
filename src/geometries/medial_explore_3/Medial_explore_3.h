@@ -35,7 +35,7 @@ public:
 	// methods to communicate with other geometries
 	//virtual std::list<std::string> offer_structures();
 	//virtual void* give_structure(const std::string& name);
-	//virtual void receive_structure_changed(const std::string& name);
+	virtual void receive_structure_changed(const std::string& name);
 	
 	// points communication with user interface
 	//virtual void add_points(std::list<Point3D>*);
@@ -56,12 +56,16 @@ public:
 
 	Medial_axis_transform_3* get_medial_axis();
 	Medial_axis_transform_3* get_topology_filtered_medial_axis();
+	std::vector<std::set<Face*> >* get_medial_axis_sheets();
+	std::vector<double>* get_sheet_topology_angle_stability();
+	std::vector<Ball>* get_sampled_balls();
+	void write_mesh_balls(const std::string& file_name, std::vector<Ball>* balls);
 
 	void invalidate_cache();
 	
 	Medial_axis_transform_3 mat;
-private:
-	bool has_topology_filtration;
+//private:
+	bool has_topology_filtration, has_sheets, has_topology_sheets, has_mat, has_balls;
 
 };
 

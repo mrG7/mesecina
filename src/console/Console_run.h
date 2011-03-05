@@ -17,9 +17,10 @@ protected:
 	Console_logger logger;
 	int argc;
 	char** argv;
-
+	QString path_to_filename(const QString& path);
 	static char* get_param_variable(int argc, char *argv[], char* filter);
 	static bool assign_int_parameter_if_exists(int argc, char *argv[], char* filter, int &variable);
+	static bool assign_float_parameter_if_exists(int argc, char *argv[], char* filter, double &variable);
 	static bool assign_string_parameter_if_exists(int argc, char *argv[], char* filter, char* &variable);
 };
 

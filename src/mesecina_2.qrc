@@ -8,6 +8,9 @@
     <file alias="pencil.frag">../res/pencil.frag</file>
     <file alias="paper.png">../res/paper.png</file>
   </qresource>
+  <qresource>
+    <file alias="init_settings.ini">../res/init_settings_2.ini</file>
+  </qresource>
   <qresource prefix="/colormap">
     <file alias="Autumn.map">../res/colormap/Autumn.map</file>
     <file alias="Autumn.png">../res/colormap/Autumn.png</file>

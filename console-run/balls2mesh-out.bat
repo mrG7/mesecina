@@ -1,0 +1,1 @@
+bin\mesecina3d --nogui -mode balls2mesh -settings %2 -input out\%1 -output out\%1_%2.off >log\balls2mesh_%1_%2.txt

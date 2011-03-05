@@ -14,6 +14,8 @@ cd ..\..\geometries\skin_surface_3
 qmake skin_surface_3.pro -o skin_surface_3.vcproj
 cd ..\..\geometries\medial_explore_3
 qmake medial_explore_3.pro -o medial_explore_3.vcproj
+cd ..\..\geometries\medrep_view_3
+qmake medrep_view_3.pro -o medrep_view_3.vcproj
 cd ..\..\geometries\moebius_3
 qmake moebius_3.pro -o moebius_3.vcproj
 cd ..\..\..\win

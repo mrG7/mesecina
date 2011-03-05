@@ -36,7 +36,7 @@ QVariant Settings_table_model::data(const QModelIndex &index, int role) const {
      if (!index.isValid())
          return QVariant();
 
-     if (index.row() < 1 || index.row()-1 >= (int)Application_settings::setting_names.size())
+     if (index.row() < 1 || index.row()-1 >= (int)Application_settings::settings.size())
          return QVariant();
 
 	 QSettings settings; QString settings_name; Application_setting_type settings_type;
@@ -195,12 +195,12 @@ void Settings_table_model::filter_apply(const QString& text) {
 	filtered_tooltips.clear();
 	if (removed>0) endRemoveRows();
 
-	for (unsigned i=0; i < Application_settings::setting_names.size(); i++) {
-		QString name_from_variables = Application_settings::setting_names[i];
-		QString ttip_from_variables = Application_settings::setting_tooltips[i];
+	for (unsigned i=0; i < Application_settings::settings.size(); i++) {
+		QString name_from_variables = Application_settings::settings[i].name;
+		QString ttip_from_variables = Application_settings::settings[i].tooltip;
 		if (name_from_variables.toUpper().indexOf(text.toUpper()) != -1 ) {
 			filtered_names.push_back(name_from_variables);
-			filtered_types.push_back(Application_settings::setting_types[i]);
+			filtered_types.push_back(Application_settings::settings[i].type);
 			filtered_tooltips.push_back(ttip_from_variables);
 
 		}
@@ -222,6 +222,16 @@ void Settings_table_model::load_current_settings(const QString& file_name) {
 	QStringList keys = ini_settings.allKeys();
 	for (int i = 0; i < keys.size(); ++i)
 		Application_settings::set_setting(keys[i], ini_settings.value(keys[i]));
+	std::cout << "Loaded " << keys.size() << " settings from " << file_name.toStdString() << std::endl;
+}
+
+void Settings_table_model::load_settings_and_emit_change(const QString& file_name) {
+	QSettings ini_settings(file_name, QSettings::IniFormat);
+	QStringList keys = ini_settings.allKeys();
+	for (int i = 0; i < keys.size(); ++i) {
+		Application_settings::set_setting(keys[i], ini_settings.value(keys[i]));
+		emit application_settings_changed(keys[i]);
+	}
 	std::cout << "Loaded " << keys.size() << " settings from " << file_name.toStdString() << std::endl;
 }
 

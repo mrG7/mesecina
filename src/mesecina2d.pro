@@ -39,6 +39,7 @@ win32 {
 		LIBS += union_of_balls_2d.lib		
 		LIBS += moebius_2d.lib	
 		LIBS += gl_widget_2d.lib
+		LIBS += scale_analysis_2d.lib
 	} else {
 		LIBS += witness_2.lib
 		LIBS += second_voronoi_2.lib
@@ -46,6 +47,7 @@ win32 {
 		LIBS += union_of_balls_2.lib		
 		LIBS += moebius_2.lib	
 		LIBS += gl_widget_2.lib
+		LIBS += scale_analysis_2.lib
 	}
 
 }	

@@ -397,6 +397,7 @@ public:
 		Vertex_handle current_vertex = 0;
 		bool not_a_curve = false;
 		ordered_points.clear();
+		ordered_normals.clear();
 
 		// check if reconstruction is one single curve
 		v_end = finite_vertices_end();
@@ -413,9 +414,11 @@ public:
 
 		crust_classified = true;
 
+
 		// order points for the curve reconstruction
 		if (current_vertex==0) current_vertex = finite_vertices_begin();
 		ordered_points.push_back(QPointF(CGAL::to_double(current_vertex->point().x()), CGAL::to_double(current_vertex->point().y())));
+		ordered_normals.push_back(QPointF(0,0));
 		Vertex_handle last_vertex = 0;
 
 		int number_of_points = (int)number_of_vertices();
@@ -437,6 +440,14 @@ public:
 							current_vertex = other_vertex;
 							ordered_points.push_back(
 								QPointF(CGAL::to_double(current_vertex->point().x()), CGAL::to_double(current_vertex->point().y())));
+							double dx = CGAL::to_double(current_vertex->point().x()) - CGAL::to_double(last_vertex->point().x());
+							double dy = CGAL::to_double(current_vertex->point().y()) - CGAL::to_double(last_vertex->point().y());
+							QPointF segment_normal = QPointF(-1 * dy, dx);
+							segment_normal = segment_normal / sqrt(pow(segment_normal.x(), 2) + pow(segment_normal.y(), 2));
+//							std::cout << "before ordered_normals.back(): " << ordered_normals.back().x() << " " << ordered_normals.back().y() << std::endl;
+							ordered_normals.back() =  ordered_normals.back() + segment_normal;
+//							std::cout << "after ordered_normals.back(): " <<ordered_normals.back().x() << " " << ordered_normals.back().y() << std::endl;
+							ordered_normals.push_back(segment_normal);
 							done = true;
 						}
 					}
@@ -445,11 +456,33 @@ public:
 				} while ((e_start != e_circ) && !done);
 				//if (!done) std::cout << "end of curve has been found" << std::endl;
 		}
-		//std::cout << "given curve size: " << ordered_points.size() << std::endl;
+		std::cout << "given curve size: " << ordered_points.size() << std::endl;
+		std::cout << "given normal size: " << ordered_normals.size() << std::endl;
+
+		// normalize normals
+		for (int i=0; i< ordered_normals.size(); i++) {
+			QPointF n = ordered_normals[i];
+			double length = sqrt(pow(n.x(), 2) + pow(n.y(), 2));
+//			std::cout << "length: " << length << std::endl;
+			ordered_normals[i] = n / length;
+//			std::cout << "normal length: " << sqrt(pow(ordered_normals[i].x(), 2) + pow(ordered_normals[i].y(), 2)) << std::endl;
+		}
+
+		// fix beginning end if closed curve
+		if (ordered_points[0]==ordered_points[ordered_points.size()-1]) {
+			QPointF norm = ordered_normals[0] + ordered_normals[ordered_points.size()-1];
+			norm = norm / sqrt(pow(norm.x(), 2) + pow(norm.y(), 2));
+			ordered_normals[0] = ordered_normals[ordered_points.size()-1] = norm;
+		}
+
 	}
 
 	void* get_ordered_onestep_points() {
 		return &ordered_points;
+	}
+
+	QVector< QPointF >* get_ordered_onestep_normals() {
+		return &ordered_normals;
 	}
 
 	//void compute_classification() {
@@ -764,6 +797,7 @@ private:
 	std::list< Weighted_point > inner_balls;
 	std::list<Point3D> inner_balls_floats;
 	QVector< QPointF > ordered_points;
+	QVector< QPointF > ordered_normals;
 	double front_value;
 
 };

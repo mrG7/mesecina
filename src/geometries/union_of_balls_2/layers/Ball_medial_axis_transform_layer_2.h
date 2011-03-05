@@ -26,14 +26,16 @@ public:
 	typedef typename Union_of_balls_2::Point_2										 Point_2;
 	typedef typename Union_of_balls_2::Circle_2										 Circle_2;
 
-	Ball_medial_axis_transform_layer_2(const QString& name, Union_of_balls_2* m, const QString& tt = "", bool axis = true, bool vertex = false, bool fill = true, bool scale_axis=false) : GL_draw_layer_2(name, tt), parent(m)
+	Ball_medial_axis_transform_layer_2(const QString& name, Union_of_balls_2* m, const QString& tt = "", bool axis = true, bool vertex = false, bool fill = true, bool scale_axis=false, bool convex_balls=false) : GL_draw_layer_2(name, tt), parent(m)
 	{
 		do_axis = axis;
 		do_vertex = vertex;
 		do_fill = fill;
 		do_scale_axis = scale_axis;
+		do_convex_balls = convex_balls;
 
 		Application_settings::add_double_setting("scale-axis-shrinking-back-percentage",100);
+		Application_settings::add_bool_setting("ignore-non-complete-v-voronoi edge", false);
 	}
 
 	virtual void draw_commands() {
@@ -51,7 +53,7 @@ public:
 					CGAL::Object o = t->dual(e_it);
 					Segment_2 s;
 					if (CGAL::assign(s,o)) *this << s;
-				} else if (f->get_classification(id) == V_CROSSING) {
+				} else if (!Application_settings::get_bool_setting("ignore-non-complete-v-voronoi edge") && f->get_classification(id) == V_CROSSING) {
 					Ball_vertex_handle mid = f->get_ball_voronoi_edge(id);
 					// this is a crossing edge
 					if (f->get_classification() != V_INTERIOR) {
@@ -81,6 +83,20 @@ public:
 				}
 			}
 			std::cout << PROGRESS_DONE << std::endl;
+		} else if (do_convex_balls) {
+			std::list<Circle_2>* mb = parent->get_convex_balls();
+			std::list<Circle_2>::iterator ball_it, ball_end = mb->end();
+			for(ball_it = mb->begin(); ball_it != ball_end; ball_it++) {
+				Circle_2 circ = *ball_it;
+				if (do_vertex) {
+					*this << circ.center();
+				} else {
+					double r = CGAL::to_double(circ.squared_radius());
+					*this << Circle_2(circ.center(), r);
+				}
+			}
+			if (do_fill) *this << RENDER_NO_FILL;
+
 		} else {
 			if (do_fill) *this << RENDER_FILL;
 			double shrink_ratio = 1;
@@ -111,6 +127,10 @@ public:
 		switch (prop) {
 		case COLOR_EDITABLE:
 			return true;
+		case USER_PROPERTY_1:
+			return do_convex_balls;
+		case USER_PROPERTY_2:
+			return !do_convex_balls;
 //		case SCALAR_EDITABLE:
 		case POINT_SIZE_EDITABLE:
 			return do_vertex;
@@ -123,21 +143,89 @@ public:
 		}
 	}
 
-	//virtual QString get_name_user_property(Layer_property l) { 
-	//	if (l== SCALAR_EDITABLE)
-	//		return "Radii range";
-	//	return "";
-	//}
+	virtual QString get_name_user_property(Layer_property l) { 
+		if (l== USER_PROPERTY_1)
+			return "Balls to WPOFF";
+		if (l== USER_PROPERTY_2)
+			return "Balls to WPOFF";
+		return "";
+	}
 
 	virtual void application_settings_changed(const QString& settings_name) {
 		if ((!do_axis && settings_name=="medial-ball-sampling-min-angle-for-scale-axis") ||
-			(do_scale_axis && settings_name=="scale-axis-shrinking-back-percentage"))
+			(do_scale_axis && settings_name=="scale-axis-shrinking-back-percentage")) {
+				invalidate_cache();
+				widget->request_repaint();
+		}
+		if (do_axis && settings_name=="ignore-non-complete-v-voronoi edge") {
 			invalidate_cache();
+			widget->request_repaint();
+		}
+	}
+
+
+	virtual void execute_user_property(Layer_property l) {
+		if (l == USER_PROPERTY_2) {
+			QSettings settings;
+			QString file_name = QFileDialog::getSaveFileName(
+				0,
+				"Choose an off filename to save balls to",
+				settings.value("last-data-directory",QString()).toString(),
+				"WPOFF (*.wpoff)");
+			if (file_name=="") return;
+			if (!file_name.endsWith(".wpoff")) file_name += ".wpoff";
+			QString save_directory = file_name;
+			save_directory.truncate(file_name.lastIndexOf('/'));
+			settings.setValue("last-data-directory",save_directory);
+
+			std::list<Point3D> medial_points;
+
+			std::list<Circle_2>::iterator b_it, b_end = parent->get_medial_balls()->end();
+			for (b_it = parent->get_medial_balls()->begin(); b_it!=b_end; b_it++)
+				medial_points.push_back(Point3D(CGAL::to_double(b_it->center().x()),
+				CGAL::to_double(b_it->center().y()),
+				sqrt(CGAL::to_double(b_it->squared_radius()))));
+
+			parent->save_balls(file_name, &medial_points);
+		}
+		if (l == USER_PROPERTY_1) {
+			QSettings settings;
+			QString file_name = QFileDialog::getSaveFileName(
+				0,
+				"Choose an off filename to save balls to",
+				settings.value("last-data-directory",QString()).toString(),
+				"WPOFF (*.wpoff)");
+			if (file_name=="") return;
+			if (!file_name.endsWith(".wpoff")) file_name += ".wpoff";
+			QString save_directory = file_name;
+			save_directory.truncate(file_name.lastIndexOf('/'));
+			settings.setValue("last-data-directory",save_directory);
+
+			std::list<Point3D> convex_points;
+			std::list<Circle_2>::iterator b_it, b_end = parent->get_convex_balls()->end();
+			for (b_it = parent->get_convex_balls()->begin(); b_it!=b_end; b_it++)
+				convex_points.push_back(Point3D(CGAL::to_double(b_it->center().x()),
+				CGAL::to_double(b_it->center().y()),
+				sqrt(CGAL::to_double(b_it->squared_radius()))));
+
+			b_it, b_end = parent->get_medial_balls()->end();
+			for (b_it = parent->get_medial_balls()->begin(); b_it!=b_end; b_it++)
+				convex_points.push_back(Point3D(CGAL::to_double(b_it->center().x()),
+				CGAL::to_double(b_it->center().y()),
+				sqrt(CGAL::to_double(b_it->squared_radius()))));
+
+			
+//			convex_points.insert(convex_points.end(),parent->get_weighted_points()->begin(), parent->get_weighted_points()->end());
+
+			
+
+			parent->save_balls(file_name, &convex_points);
+		}
 	}
 
 private:
 	Union_of_balls_2 *parent;
-	bool do_axis, do_vertex, do_fill, do_scale_axis;
+	bool do_axis, do_vertex, do_fill, do_scale_axis, do_convex_balls;
 
 };
 

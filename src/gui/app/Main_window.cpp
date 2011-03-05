@@ -60,12 +60,15 @@ Main_window::Main_window(int x, int y, QString app_name) {
 		Color_map* cm = new Color_map(fileInfo.absoluteFilePath(), fileInfo.baseName());
 		Color_map_factory::add_color_map(cm);
 	}
+	std::cout << "colormap loaded" << std::endl;
+
 
 #ifdef MESECINA_3D
 	generic_file_types.append("off"); generic_file_description.append("OFF");
 	generic_file_types.append("woff"); generic_file_description.append("Weighted OFF");
 	generic_file_types.append("moff"); generic_file_description.append("Medial axis OFF");
 	generic_file_types.append("stg");  generic_file_description.append("Stage representation");
+	generic_file_types.append("medrep");  generic_file_description.append("Medial representation");
 #else
 	generic_file_types.append("poff");  generic_file_description.append("Planar OFF");
 	generic_file_types.append("wpoff");  generic_file_description.append("Weighted planar OFF");
@@ -84,11 +87,15 @@ Main_window::Main_window(int x, int y, QString app_name) {
 	//reload position and size of main window
 	resize(settings->value("mainwindow/size", QSize(x,y)).toSize());
 	move(settings->value("mainwindow/pos", QPoint(100,100)).toPoint());
+	std::cout << "window moved" << std::endl;
+
 
 	// order is important!!! Dont change it!
 	add_widgets();
+	std::cout << "widgets added" << std::endl;	
 	DEBUG_MSG("widgets added");
-	
+
+
 	add_toolbars();
 	DEBUG_MSG("toolbars added");
 
@@ -101,12 +108,22 @@ Main_window::Main_window(int x, int y, QString app_name) {
 	//add_evolutions();
 	//DEBUG_MSG("evolutions added");
 
-	Application_settings::add_double_setting("ball-loading-perturb", 1.0001);
+	Application_settings::add_double_setting("ball-loading-radius-perturb", 1.002);
+	Application_settings::add_double_setting("ball-loading-center-perturb", 0.0001);
 
 	// add windows which depend on evolutions, layers, geometries
 	settings_dialog = new Settings_dialog(this);
 	connect(settings_dialog, SIGNAL(closing(bool)), this, SLOT(show_settings(bool)));
 	connect(settings_dialog->settings_list_widget, SIGNAL(application_settings_changed(const QString&)), this, SLOT(application_settings_changed(const QString&)));
+
+	if (!settings->contains("mainwindow/notfirstrun")) {
+		std::cout << "first run" << std::endl;
+		settings->setValue("mainwindow/notfirstrun", true);
+		if (QFile::exists(":/init_settings.ini"))
+			settings_dialog->settings_list_widget->load_settings_and_emit_change(":/init_settings.ini");
+		else std::cout << LOG_WARNING << "Couldn't find default settings file" << std::endl;
+		update_selected_geometries();
+	}
 
 	add_menu();
 	DEBUG_MSG("menus added");
@@ -151,6 +168,9 @@ Main_window::Main_window(int x, int y, QString app_name) {
 	layer_list_model->filter_apply("",false);
 	settings_dialog->settings_list_widget->filter_changed("");
 
+
+
+
 	widget->repaintGL();
 	widget->set_window_to_boundingbox();
 	widget->repaintGL();
@@ -161,10 +181,23 @@ Main_window::Main_window(int x, int y, QString app_name) {
 	msg(tr("%1 %2 started...").arg(APPLICATION_NAME).arg(APPLICATION_VERSION));
 	setFocus();
 
+	if (!settings->contains("mainwindow/notfirstrun")) {
+		std::cout << "first run" << std::endl;
+		settings->setValue("mainwindow/notfirstrun", true);
+		if (QFile::exists(":/init_settings.ini"))
+			settings_dialog->settings_list_widget->load_settings_and_emit_change(":/init_settings.ini");
+		else std::cout << LOG_WARNING << "Couldn't find default settings file" << std::endl;
+		update_selected_geometries();
+	}
+
+//	std::cout << "end of Main_window constructor" << std::endl;
+
+
 }
 
 void Main_window::add_widgets() {
 	coord_label = new QLabel();
+	std::cout << "add_widgets started" << std::endl;	
 	
 	#ifdef Q_WS_WIN
 	QFont bigger_font = coord_label->font();
@@ -190,31 +223,36 @@ void Main_window::add_widgets() {
 	coord_label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	coord_label->setAlignment(Qt::AlignRight);
 	coord_label->setMinimumWidth(120);
+	std::cout << "coord_label done" << std::endl;	
 
 	// the v_log_splitter between the GL_widget and the logger window
 	v_log_splitter = new QSplitter(this);
 	v_log_splitter->setOrientation(Qt::Vertical);
 	setCentralWidget(v_log_splitter);
+	std::cout << "v log splitter" << std::endl;	
 
 	// the h_splitter between the main window and the right area of the layers
 	h_splitter = new QSplitter(v_log_splitter);
-
+	std::cout << "h splitter" << std::endl;	
 
 #ifdef MESECINA_3D
 	widget = new GL_widget_3(h_splitter);
 #else
 	widget = new GL_widget_2(h_splitter);
 #endif
+	std::cout << "widget created" << std::endl;	
 
 	widget->setMouseTracking(true);
 	widget->setFocusPolicy(Qt::ClickFocus);
 	widget->setFocus();
 	connect(widget, SIGNAL(widget_resized_to(const QRect&)), this, SLOT(gl_widget_resized(const QRect&)));
+	connect(save_view, SIGNAL(clicked ( bool)), widget, SLOT(save_view(bool)));
+	connect(load_view, SIGNAL(clicked ( bool)), widget, SLOT(load_view(bool)));
 #ifndef MESECINA_3D
 	connect (widget, SIGNAL(mouse_at(const QPointF&)), this, SLOT(mouse_moved(const QPointF&)));
 #endif
-	connect(save_view, SIGNAL(clicked ( bool)), widget, SLOT(save_view(bool)));
-	connect(load_view, SIGNAL(clicked ( bool)), widget, SLOT(load_view(bool)));
+	std::cout << "widget added" << std::endl;	
+
 	// the v_layer_splitter
 	v_layer_splitter = new QSplitter(h_splitter);
 	v_layer_splitter->setOrientation(Qt::Vertical);
@@ -1170,14 +1208,15 @@ void Main_window::about() {
 	QString svn_revision(SVN_REVISION);
 	svn_revision.remove('$');
 #ifndef GINA_2
-	QMessageBox::about( this, tr("About %1 v%2").arg(APPLICATION_NAME).arg(APPLICATION_VERSION),
+	QMessageBox::about( this, tr("About %1 v %2").arg(APPLICATION_NAME).arg(APPLICATION_VERSION),
 tr("This software is for visualization and studying of medial axis and related\n\
 computational geometry structures. For more information and latest version visit: \n\n\
-                        http://www.agg.ethz.ch/~miklosb/mesecina/\n\n\
-%1 v%2 was developed using Qt 4.2.0 and CGAL 3.2.1\n\n\
-Copyright Bálint Miklós, Applied Geometry Group, ETH Zurich, 2006-2008\n\
+                        http://www.balintmiklos.com/mesecina/\n\
+                        http://code.google.com/p/mesecina\n\n\
+%1 %2 was developed using Qt 4.5.0 and CGAL 3.5\n\n\
+Copyright Bálint Miklós, Applied Geometry Group, ETH Zurich, 2006-2011\n\
 Thank you to Armin Häberling for his contribution\n\n\
-SVN version: %3").arg(APPLICATION_NAME).arg(APPLICATION_VERSION).arg(svn_revision));
+                        Build date: %3").arg(APPLICATION_NAME).arg(APPLICATION_VERSION).arg(QString::fromLocal8Bit(BUILDDATE)));
 #else
 	QMessageBox::about( this, tr("About %1 v%2").arg(APPLICATION_NAME).arg(APPLICATION_VERSION),
 tr("This is a software framework for 2d geometry visualization and algorithm prototyping.\n\
@@ -1221,6 +1260,7 @@ void Main_window::load_generic_file(const QString &file_name) {
 	else if (extension=="wpoff" || extension=="woff")
 		load_balls(file_name);
 
+//	std::cout << "Main_window::load_generic_file before broadcas" << std::endl;
 	//broadcast to geometries
 	std::list<Geometry*>::iterator g_it, g_end = geometries.end();
 	for (g_it = geometries.begin(); g_it != g_end; g_it++) {
@@ -1255,6 +1295,7 @@ void Main_window::load_generic_file(const QString &file_name) {
 	widget->repaintGL();
 	set_current_file(file_name);
 	update_stats_if_needed();
+	update_settings();
 
 }
 void Main_window::save_generic_file() {
@@ -1511,10 +1552,14 @@ void Main_window::load_balls(QString file_name) {
 	statistics_dialog->time_widget->clear();
 	QTextStream fs( &f );
 	QString head; fs >> head;
-	double perturb_w = Application_settings::get_double_setting("ball-loading-perturb");
+	double perturb_w = Application_settings::get_double_setting("ball-loading-radius-perturb");
+	double perturb_center = Application_settings::get_double_setting("ball-loading-center-perturb");
+	double perturb_x, perturb_y, perturb_z;
+
+
 	if (perturb_w==0) {
-		std::cout << LOG_ERROR << "ball-loading-perturb value is 0, we set it to 1" << std::endl;
-		Application_settings::set_setting("ball-loading-perturb", 1);
+		std::cout << LOG_ERROR << "ball-loading-radius-perturb value is 0, we set it to 1" << std::endl;
+		Application_settings::set_setting("ball-loading-radius-perturb", 1);
 		perturb_w = 1;
 	}
 #ifdef MESECINA_3D
@@ -1542,9 +1587,13 @@ void Main_window::load_balls(QString file_name) {
 		fs >> y;
 		fs >> z;
 		fs >> w;
+		double max_movement = perturb_center * w;
+		perturb_x = ((float)rand()/RAND_MAX *2 - 1.0) * max_movement;
+		perturb_y = ((float)rand()/RAND_MAX *2 - 1.0) * max_movement;
+		perturb_z = ((float)rand()/RAND_MAX *2 - 1.0)* max_movement;
 		w = w * perturb_w;
 		w = w * w;
-		points.push_back(Point4D(x,y,z,w));
+		points.push_back(Point4D(x+perturb_x,y+perturb_y,z+perturb_z,w));
 	}
 #else 
 	std::list<Point3D> points;
@@ -1813,5 +1862,6 @@ void Main_window::application_settings_changed(const QString& settings_name) {
 
 	// repaint statistics
 	needs_stats_update = true;
+	update_settings();
 	update_stats_if_needed();
 }

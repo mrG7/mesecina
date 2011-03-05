@@ -83,12 +83,15 @@ public:
 	V_triangulation_2* get_classified_v_triangulation();
 	V_triangulation_2* get_flooded_v_triangulation();
 	std::list<Circle_2>* get_medial_balls();
+	std::list<Circle_2>* get_convex_balls();
 	std::list<Circle_2>* get_orig_medial_balls(bool not_compute = false);
 
+	void save_balls(QString file_name,std::list<Point3D>* points);
 private:
 
-	void add_medial_balls_between(Point_2& c1, NT& w1, Point_2& c2, NT& w2, Point_2& intersection, bool debug_this = false);
-	void add_medial_balls_between(Point_2& c1, NT& w1, Point_2& c2, NT& w2);	void fill_v_triangulation();
+	void add_medial_balls_between(Point_2& c1, NT& w1, Point_2& c2, NT& w2, Point_2& intersection, std::list<Circle_2>* container = 0);
+	void add_medial_balls_between(Point_2& c1, NT& w1, Point_2& c2, NT& w2, std::list<Circle_2>* container = 0);	
+	void fill_v_triangulation();
 	static bool intersect_ball_ball(const Weighted_point &wp0, const Weighted_point &wp1, Point_2& ip1, Point_2 &ip2);
 
 
@@ -96,7 +99,7 @@ private:
 private:
 	Ball_triangulation_2 ball_triangulation;
 	V_triangulation_2 v_triangulation;
-	std::list<Circle_2> medial_balls, orig_medial_balls;
+	std::list<Circle_2> medial_balls, orig_medial_balls, convex_balls;
 	std::list<Point3D> orig_points;
 	std::list<Point3D> medial_points;
 	std::vector<int> random_tokens;
@@ -104,6 +107,7 @@ private:
 
 	bool has_v_triangulation;
 	bool has_medial_balls;
+	bool has_convex_balls;
 
 	std::string prefix;
 	std::string ball_source; //SHARED_INNER_POLES vs SHARED_INNER_VORONOI_BALLS

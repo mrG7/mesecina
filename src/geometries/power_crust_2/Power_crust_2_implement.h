@@ -48,6 +48,8 @@ Power_crust_2<K>::Power_crust_2() : has_polar_triangulation(false) {
 	add_layer(voronoi_layer);
 	GL_draw_layer_2* crust_layer = new Delaunay_layer_2< Power_crust_2<K> >("Curve",this, "Reconstruction from the one-step medial axis", false, true);
 	add_layer(crust_layer);
+	GL_draw_layer_2* crust_normal_layer = new Delaunay_layer_2< Power_crust_2<K> >("Curve normals",this, "Normals from the reconstruction from the one-step medial axis", false, true, true);
+	add_layer(crust_normal_layer);
 
 
 	GL_draw_layer_2* voronoi_circles_layer = new Voronoi_balls_layer_2< Power_crust_2<K> >("Voronoi circles",this, "Voronoi circles of sample points", false, false);
@@ -387,6 +389,17 @@ typename Power_crust_2<K>::Triangulation_2* Power_crust_2<K>::get_lambda_angle_c
 	return &input_triangulation;
 }
 
+template <class K>
+QVector< QPointF >* Power_crust_2<K>::get_ordered_normals() {
+	get_crust_classified_triangulation();
+	return input_triangulation.get_ordered_onestep_normals();
+}
+
+template <class K>
+QVector< QPointF >* Power_crust_2<K>::get_ordered_points() {
+	get_crust_classified_triangulation();
+	return static_cast<QVector< QPointF >*>(input_triangulation.get_ordered_onestep_points());
+}
 
 
 template <class K>

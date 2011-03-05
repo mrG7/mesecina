@@ -29,13 +29,13 @@ Settings_table_view::~Settings_table_view() {
 void Settings_table_view::context_menu(QMouseEvent * event, const QModelIndex &index) {
 	if (!index.isValid() || index.row()==0) return;
 	int ind = index.data(Qt::UserRole).toInt();
-	if (Application_settings::setting_types[ind] != AS_DOUBLE && Application_settings::setting_types[ind] != AS_INTEGER) {
+	if (Application_settings::settings[ind].type != AS_DOUBLE && Application_settings::settings[ind].type != AS_INTEGER) {
 		std::cout << "One can animate currently only integer or double variables" << std::endl;
 		return;
 	}
 
 	animate_popup->move(event->globalPos());
-	animate_popup->set_application_variable(Application_settings::setting_names[ind], Application_settings::setting_types[ind]);
+	animate_popup->set_application_variable(Application_settings::settings[ind].name, Application_settings::settings[ind].type);
 	animate_popup->show();
 }
 

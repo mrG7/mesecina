@@ -33,6 +33,7 @@ public:
 //	void set_variable(Application_variable v, bool apply_filter = true);
 	void process_filter();
 	static void load_current_settings(const QString& file_name);
+	void load_settings_and_emit_change(const QString& file_name);
 	void save_current_settings(const QString& file_name);
 
 

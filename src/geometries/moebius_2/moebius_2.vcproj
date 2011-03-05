@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding = "Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9,00"
+	Name="moebius_2"
+	ProjectGUID="{412A5D6B-E25F-3939-ADF6-1D15AE356D8C}"
+	Keyword="Qt4VSv1.0">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="."
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			ConfigurationType="2"
+			IntermediateDirectory="..\..\..\win\debug\obj-moebius-2\"
+			UseOfMfc="0">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;c:\Qt\4.5.1-vc2008\qt\include\QtCore&quot;,&quot;c:\Qt\4.5.1-vc2008\qt\include\QtGui&quot;,&quot;c:\Qt\4.5.1-vc2008\qt\include\QtOpenGL&quot;,&quot;c:\Qt\4.5.1-vc2008\qt\include&quot;,&quot;..\..\2d&quot;,&quot;..\..&quot;,&quot;INCLUDEPATH&quot;,&quot;+=&quot;,&quot;..\..\..\include&quot;,&quot;..\..\..\include&quot;,&quot;..\..\..\include\dionysus&quot;,&quot;..\..\..\include\Moebius_diagram_2\include&quot;,&quot;$(CGAL_DIR)\include&quot;,&quot;$(CGAL_DIR)\auxiliary\gmp\include&quot;,&quot;$(CGAL_DIR)\auxiliary\taucs\include&quot;,&quot;$(BOOST_ROOT)&quot;,&quot;c:\Qt\4.5.1-vc2008\qt\include\ActiveQt&quot;,&quot;..\..\..\win\moc-moebius-2&quot;,&quot;.&quot;,c:\Qt\4.5.1-vc2008\qt\mkspecs\default"
+				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
+				AssemblerListingLocation="..\..\..\win\debug\obj-moebius-2\"
+				BufferSecurityCheck="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4396,4396"
+				ExceptionHandling="1"
+				GeneratePreprocessedFile="0"
+				ObjectFile="..\..\..\win\debug\obj-moebius-2\"
+				Optimization ="4"
+				PreprocessorDefinitions="_WINDOWS,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,MESECINA_GEOMETRY_LIBRARY,QT_DLL,QT_OPENGL_LIB,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT"
+				ProgramDataBaseFileName=".\"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="true"
+				SuppressStartupBanner="true"
+				TreatWChar_tAsBuiltInType="false"
+				WarningLevel="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="opengl32.lib glu32.lib gdi32.lib user32.lib gl_widget_2d.lib glew32.lib mesecina_staticd.lib c:\Qt\4.5.1-vc2008\qt\lib\QtOpenGLd4.lib c:\Qt\4.5.1-vc2008\qt\lib\QtGuid4.lib c:\Qt\4.5.1-vc2008\qt\lib\QtCored4.lib"
+				AdditionalLibraryDirectories="..\..\..\lib,$(CGAL_DIR)\lib,$(CGAL_DIR)\auxiliary\gmp\lib,$(CGAL_DIR)\auxiliary\taucs\lib,$(BOOST_ROOT)\lib,c:\Qt\4.5.1-vc2008\qt\lib"
+				AdditionalOptions="&quot;/MANIFESTDEPENDENCY:type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos; processorArchitecture=&apos;*&apos;&quot;"
+				GenerateDebugInformation="true"
+				IgnoreImportLibrary="true"
+				LinkTimeCodeGeneration="0"
+				OutputFile="..\..\..\lib\moebius_2d.dll"
+				ProgramDatabaseFile=""
+				SubSystem="2"
+				SuppressStartupBanner="true"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				DefaultCharType="0"
+				EnableErrorChecks="1"
+				WarningLevel="0"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="copy  &quot;$(TargetPath)&quot; &quot;..\..\..\win\debug&quot;"
+				Description="Copy moebius_2d.dll to ..\..\..\win\debug"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_WINDOWS,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,MESECINA_GEOMETRY_LIBRARY,QT_DLL,QT_OPENGL_LIB,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,_DEBUG"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="."
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			ConfigurationType="2"
+			IntermediateDirectory="..\..\..\win\release\obj-moebius-2\"
+			UseOfMfc="0"
+			WholeProgramOptimization="true">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;c:\Qt\4.5.1-vc2008\qt\include\QtCore&quot;,&quot;c:\Qt\4.5.1-vc2008\qt\include\QtGui&quot;,&quot;c:\Qt\4.5.1-vc2008\qt\include\QtOpenGL&quot;,&quot;c:\Qt\4.5.1-vc2008\qt\include&quot;,&quot;..\..\2d&quot;,&quot;..\..&quot;,&quot;INCLUDEPATH&quot;,&quot;+=&quot;,&quot;..\..\..\include&quot;,&quot;..\..\..\include&quot;,&quot;..\..\..\include\dionysus&quot;,&quot;..\..\..\include\Moebius_diagram_2\include&quot;,&quot;$(CGAL_DIR)\include&quot;,&quot;$(CGAL_DIR)\auxiliary\gmp\include&quot;,&quot;$(CGAL_DIR)\auxiliary\taucs\include&quot;,&quot;$(BOOST_ROOT)&quot;,&quot;c:\Qt\4.5.1-vc2008\qt\include\ActiveQt&quot;,&quot;..\..\..\win\moc-moebius-2&quot;,&quot;.&quot;,c:\Qt\4.5.1-vc2008\qt\mkspecs\default"
+				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
+				AssemblerListingLocation="..\..\..\win\release\obj-moebius-2\"
+				BufferSecurityCheck="false"
+				DebugInformationFormat="0"
+				DisableSpecificWarnings="4396,4396"
+				ExceptionHandling="1"
+				GeneratePreprocessedFile="0"
+				ObjectFile="..\..\..\win\release\obj-moebius-2\"
+				Optimization ="2"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,_WINDOWS,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,MESECINA_GEOMETRY_LIBRARY,QT_DLL,QT_NO_DEBUG,QT_OPENGL_LIB,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,NDEBUG"
+				ProgramDataBaseFileName=".\"
+				RuntimeLibrary="2"
+				RuntimeTypeInfo="true"
+				SuppressStartupBanner="true"
+				TreatWChar_tAsBuiltInType="false"
+				WarningLevel="3"
+				WholeProgramOptimization="true"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="opengl32.lib glu32.lib gdi32.lib user32.lib gl_widget_2.lib glew32.lib mesecina_static.lib c:\Qt\4.5.1-vc2008\qt\lib\QtOpenGL4.lib c:\Qt\4.5.1-vc2008\qt\lib\QtGui4.lib c:\Qt\4.5.1-vc2008\qt\lib\QtCore4.lib"
+				AdditionalLibraryDirectories="..\..\..\lib,$(CGAL_DIR)\lib,$(CGAL_DIR)\auxiliary\gmp\lib,$(CGAL_DIR)\auxiliary\taucs\lib,$(BOOST_ROOT)\lib,c:\Qt\4.5.1-vc2008\qt\lib"
+				AdditionalOptions="&quot;/MANIFESTDEPENDENCY:type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos; processorArchitecture=&apos;*&apos;&quot;"
+				GenerateDebugInformation="false"
+				IgnoreImportLibrary="true"
+				LinkIncremental="1"
+				LinkTimeCodeGeneration="1"
+				OutputFile="..\..\..\lib\moebius_2.dll"
+				ProgramDatabaseFile=""
+				SubSystem="2"
+				SuppressStartupBanner="true"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				DefaultCharType="0"
+				EnableErrorChecks="1"
+				WarningLevel="0"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="copy  &quot;$(TargetPath)&quot; &quot;..\..\..\win\release&quot;"
+				Description="Copy moebius_2.dll to ..\..\..\win\release"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,_WINDOWS,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,MESECINA_GEOMETRY_LIBRARY,QT_DLL,QT_NO_DEBUG,QT_OPENGL_LIB,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			<Filter
+				Name=".."
+				Filter="">
+				<Filter
+					Name=".."
+					Filter="">
+					<Filter
+						Name="geometries"
+						Filter="">
+						<File
+							RelativePath="..\..\geometries\Geometry.cpp"/>
+					</Filter>
+				</Filter>
+			</Filter>
+			<File
+				RelativePath="Moebius_2.cpp"/>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<Filter
+				Name=".."
+				Filter="">
+				<Filter
+					Name=".."
+					Filter="">
+					<Filter
+						Name="geometries"
+						Filter="">
+						<File
+							RelativePath="..\..\geometries\Geometry.h">
+							<FileConfiguration
+								Name="Debug|Win32">
+								<Tool
+									Name="VCCustomBuildTool"
+									AdditionalDependencies="..\..\geometries\Geometry.h;C:\Qt\4.5.1-vc2008\qt\bin\moc.exe"
+									CommandLine="C:\Qt\4.5.1-vc2008\qt\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DMESECINA_GEOMETRY_LIBRARY -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;c:\Qt\4.5.1-vc2008\qt\include\QtCore&quot; -I&quot;c:\Qt\4.5.1-vc2008\qt\include\QtGui&quot; -I&quot;c:\Qt\4.5.1-vc2008\qt\include\QtOpenGL&quot; -I&quot;c:\Qt\4.5.1-vc2008\qt\include&quot; -I&quot;..\..\2d&quot; -I&quot;..\..&quot; -I&quot;INCLUDEPATH&quot; -I&quot;+=&quot; -I&quot;..\..\..\include&quot; -I&quot;..\..\..\include&quot; -I&quot;..\..\..\include\dionysus&quot; -I&quot;..\..\..\include\Moebius_diagram_2\include&quot; -I&quot;$(CGAL_DIR)\include&quot; -I&quot;$(CGAL_DIR)\auxiliary\gmp\include&quot; -I&quot;$(CGAL_DIR)\auxiliary\taucs\include&quot; -I&quot;$(BOOST_ROOT)&quot; -I&quot;c:\Qt\4.5.1-vc2008\qt\include\ActiveQt&quot; -I&quot;..\..\..\win\moc-moebius-2&quot; -I&quot;.&quot; -Ic:\Qt\4.5.1-vc2008\qt\mkspecs\default -D_MSC_VER=1500 -DWIN32 ..\..\geometries\Geometry.h -o ..\..\..\win\moc-moebius-2\moc_Geometry.cpp"
+									Description="MOC ..\..\geometries\Geometry.h"
+									Outputs="..\..\..\win\moc-moebius-2\moc_Geometry.cpp"
+									Path="c:\Qt\4.5.1-vc2008\qt\bin"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release|Win32">
+								<Tool
+									Name="VCCustomBuildTool"
+									AdditionalDependencies="..\..\geometries\Geometry.h;C:\Qt\4.5.1-vc2008\qt\bin\moc.exe"
+									CommandLine="C:\Qt\4.5.1-vc2008\qt\bin\moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DMESECINA_GEOMETRY_LIBRARY -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I&quot;c:\Qt\4.5.1-vc2008\qt\include\QtCore&quot; -I&quot;c:\Qt\4.5.1-vc2008\qt\include\QtGui&quot; -I&quot;c:\Qt\4.5.1-vc2008\qt\include\QtOpenGL&quot; -I&quot;c:\Qt\4.5.1-vc2008\qt\include&quot; -I&quot;..\..\2d&quot; -I&quot;..\..&quot; -I&quot;INCLUDEPATH&quot; -I&quot;+=&quot; -I&quot;..\..\..\include&quot; -I&quot;..\..\..\include&quot; -I&quot;..\..\..\include\dionysus&quot; -I&quot;..\..\..\include\Moebius_diagram_2\include&quot; -I&quot;$(CGAL_DIR)\include&quot; -I&quot;$(CGAL_DIR)\auxiliary\gmp\include&quot; -I&quot;$(CGAL_DIR)\auxiliary\taucs\include&quot; -I&quot;$(BOOST_ROOT)&quot; -I&quot;c:\Qt\4.5.1-vc2008\qt\include\ActiveQt&quot; -I&quot;..\..\..\win\moc-moebius-2&quot; -I&quot;.&quot; -Ic:\Qt\4.5.1-vc2008\qt\mkspecs\default -D_MSC_VER=1500 -DWIN32 ..\..\geometries\Geometry.h -o ..\..\..\win\moc-moebius-2\moc_Geometry.cpp"
+									Description="MOC ..\..\geometries\Geometry.h"
+									Outputs="..\..\..\win\moc-moebius-2\moc_Geometry.cpp"
+									Path="c:\Qt\4.5.1-vc2008\qt\bin"/>
+							</FileConfiguration>
+						</File>
+					</Filter>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="layers"
+				Filter="">
+				<File
+					RelativePath="layers\Christophe_moebius_layer_2.h"/>
+				<File
+					RelativePath="layers\Critical_layer_2.h"/>
+				<File
+					RelativePath="layers\Moebius_balls_layer_2.h"/>
+				<File
+					RelativePath="layers\Moebius_dual_layer_2.h"/>
+				<File
+					RelativePath="layers\One_critical_point_layer_2.h"/>
+				<File
+					RelativePath="layers\One_vanishing_ball_layer_2.h"/>
+				<File
+					RelativePath="layers\Vanishing_layer_2.h"/>
+			</Filter>
+			<File
+				RelativePath="Moebius_2.h"/>
+			<File
+				RelativePath="Moebius_2_implement.h"/>
+		</Filter>
+		<Filter
+			Name="Generated Files"
+			Filter="cpp;c;cxx;moc;h;def;odl;idl;res;"
+			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}">
+			<Filter
+				Name=".."
+				Filter="">
+				<Filter
+					Name=".."
+					Filter="">
+					<Filter
+						Name=".."
+						Filter="">
+						<Filter
+							Name="win"
+							Filter="">
+							<Filter
+								Name="moc-moebius-2"
+								Filter="">
+								<File
+									RelativePath="..\..\..\win\moc-moebius-2\moc_Geometry.cpp"/>
+							</Filter>
+						</Filter>
+					</Filter>
+				</Filter>
+			</Filter>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

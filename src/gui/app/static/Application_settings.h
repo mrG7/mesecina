@@ -21,11 +21,22 @@
 
 typedef enum Application_setting_type {AS_INTEGER, AS_DOUBLE, AS_STRING, AS_BOOL };
 
+struct Application_setting {
+	QString name;
+	Application_setting_type type;
+	QString tooltip;
+
+	Application_setting(const QString& _name, const Application_setting_type& _type, const QString& _tooltip) :
+	name(_name), type(_type), tooltip(_tooltip)  {	}
+};
+
 class API Application_settings {
 public:
-	static std::vector<QString>  setting_tooltips;
-	static std::vector<QString>  setting_names;
-	static std::vector<Application_setting_type> setting_types;
+	static std::vector<Application_setting> settings;
+	static QString name_ending;
+	//static std::vector<QString>  setting_tooltips;
+	//static std::vector<QString>  setting_names;
+	//static std::vector<Application_setting_type> setting_types;
 
 	static void add_string_setting(const QString& name, const char* defaultvalue, const QString& ttip = "");
 	static std::string get_string_setting(const QString& name);
@@ -41,6 +52,9 @@ public:
 
 	static void set_setting(const QString& name, const QVariant v);
 	static QVariant get_setting(const QString& name);
+
+	static bool to_remove(const Application_setting& s);
+	static int remove_settings_ending_with(const QString& name_ending);
 
 	static int get_setting_index(const QString& name);
 

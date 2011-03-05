@@ -20,6 +20,7 @@ class V_classified_triangulation_layer_3 : public GL_draw_layer_3 {
 public:
 	typedef typename Union_of_balls_3::V_triangulation_3						 V_triangulation_3;
 	typedef typename Union_of_balls_3::Edges_with_doubles						 Edges_with_doubles;
+	typedef typename Union_of_balls_3::Edges_set								 Edges_set;
 	typedef typename V_triangulation_3::Finite_vertices_iterator				Finite_vertices_iterator;
 	typedef typename V_triangulation_3::Finite_cells_iterator					Finite_cells_iterator;
 	typedef typename V_triangulation_3::Finite_edges_iterator					Finite_edges_iterator;
@@ -59,11 +60,12 @@ public:
 		Application_settings::add_double_setting("angle-limit", 10);
 		Application_settings::add_int_setting("angle-id", 10);
 		Application_settings::add_double_setting("scale-limit", 1);
-		Application_settings::add_bool_setting("ignore-incomplete-v-voronoi-faces-for-medial-axis", false);
+//		Application_settings::add_bool_setting("ignore-incomplete-v-voronoi-faces-for-medial-axis", false);
 	}
 
 	virtual void draw_commands() {
 		V_triangulation_3* t = parent->get_flooded_v_triangulation();
+		Edges_set* medial_edges = parent->get_medial_axis();
 //		if (do_angle) t = parent->get_local_filtered_medial_axis();
 		Edges_with_doubles* edges_with_stability;
 		if (do_scale) edges_with_stability = parent->get_scale_filtered_medial_axis();
@@ -132,11 +134,11 @@ public:
 				}
 
 			} else {
-				All_edges_iterator e_it, e_end = t->all_edges_end();
-				int counter = 0, all_edges = 0;
-				for (e_it=t->all_edges_begin(); e_it!=e_end; ++e_it, ++all_edges) {
+				std::cout << "medial axis from the new container" << std::endl;
+				BOOST_FOREACH(Edges_set::value_type i, *medial_edges) {
+					V_edge e = t->create_edge_from_vertex_pair(i);
 
-					Cell_circulator c_start, c_circ = t->incident_cells(*e_it);
+					Cell_circulator c_start, c_circ = t->incident_cells(e);
 					c_start = c_circ;
 					std::list<Point_3> polygon;
 					bool all_interior = true;
@@ -150,16 +152,16 @@ public:
 					if (polygon.size()>2 && (all_interior==true || !Application_settings::get_bool_setting("ignore-incomplete-v-voronoi-faces-for-medial-axis"))) {
 						//*this << counter++;
 						if (do_lambda) {
-							V_triangulation_3::Edge e = *e_it;
+//							V_triangulation_3::Edge e = *e_it;
 							*this << t->lambda_value(e);
 						}
 						//if (do_angle) {
 						//	V_triangulation_3::Edge e = *e_it;
 						//	*this << t->angle_value(e);
 						//}
-						Cell_handle c = e_it->first;
-						Point_3 a = c->vertex(e_it->second)->point();
-						Point_3 b = c->vertex(e_it->third)->point();
+						Cell_handle c = e.first;
+						Point_3 a = c->vertex(e.second)->point();
+						Point_3 b = c->vertex(e.third)->point();
 						double length = sqrt(CGAL::to_double(squared_distance(a,b)));
 						Vector_3 normal = (b - a) / length;
 						//					*this << Segment_3(a,b);
@@ -168,7 +170,7 @@ public:
 						*this << polygon;
 					}
 				}
-				std::cout << "There are " << all_edges << " edges in the whole triangulation and " << counter << "  have been found as medial and sent to display" << std::endl;
+//				std::cout << "There are " << all_edges << " edges in the whole triangulation and " << counter << "  have been found as medial and sent to display" << std::endl;
 			}
 			if (/*do_medial_axis ||*/ do_lambda|| do_angle || do_scale || do_top_angle) *this << NO_SCALAR;
 		}
@@ -186,6 +188,7 @@ public:
 		case USER_PROPERTY_1:
 		case USER_PROPERTY_2:
 		case USER_PROPERTY_3:
+		case USER_PROPERTY_4:
 			return do_medial_axis;
 		case SCALAR_EDITABLE:
 			return /*do_medial_axis ||*/ do_lambda|| do_angle || do_scale || do_top_angle;
@@ -209,6 +212,7 @@ public:
 		if (l == USER_PROPERTY_1) return "Medial axis to off";
 		if (l == USER_PROPERTY_2) return "Simplified MA to off";
 		if (l == USER_PROPERTY_3) return "Write MOFF file";
+		if (l == USER_PROPERTY_4) return "Write medial balls file";
 		else return "";
 	}
 
@@ -267,6 +271,23 @@ public:
 			parent->write_medial_axis_to_moff(file_name.toStdString());
 		}	
 
+		if (l == USER_PROPERTY_4) {
+
+			QSettings settings;
+			QString file_name = QFileDialog::getSaveFileName(
+				0,
+				"Choose an off filename to save balls to",
+				settings.value("last-data-directory",QString()).toString(),
+				"WOFF (*.woff)");
+			if (file_name=="") return;
+			if (!file_name.endsWith(".woff")) file_name += ".woff";
+			QString save_directory = file_name;
+			save_directory.truncate(file_name.lastIndexOf('/'));
+			settings.setValue("last-data-directory",save_directory);
+
+			parent->write_less_medial_balls(file_name.toStdString());
+		}
+
 	}
 
 	virtual void application_settings_changed(const QString& settings_name) {
@@ -317,10 +338,10 @@ public:
 		
 
 
-		if (do_medial_axis && settings_name=="ignore-incomplete-v-voronoi-faces-for-medial-axis") {
-			invalidate_cache();
-			widget->request_repaint();
-		}
+		//if (do_medial_axis && settings_name=="ignore-incomplete-v-voronoi-faces-for-medial-axis") {
+		//	invalidate_cache();
+		//	widget->request_repaint();
+		//}
 	}
 
 private:

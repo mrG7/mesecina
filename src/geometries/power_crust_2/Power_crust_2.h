@@ -70,6 +70,8 @@ public:
 	Triangulation_2* get_lambda_angle_classified_triangulation();
 
 	std::list<Point_2>* get_point_list();
+	QVector< QPointF >* get_ordered_normals();
+	QVector< QPointF >* get_ordered_points();
 
 //private:
 	Triangulation_2 input_triangulation;

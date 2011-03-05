@@ -4,6 +4,9 @@
     <file alias="manual.html">../res/manual_3.html</file>
     <file alias="standard.bnd">../res/standard_3.bnd</file>
   </qresource>
+  <qresource>
+    <file alias="init_settings.ini">../res/init_settings_3.ini</file>
+  </qresource>
   <qresource prefix="/colormap">
     <file alias="Autumn.map">../res/colormap/Autumn.map</file>
     <file alias="Autumn.png">../res/colormap/Autumn.png</file>

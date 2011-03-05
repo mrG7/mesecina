@@ -163,7 +163,10 @@ void Settings_list_widget::load_button(bool) {
 	Settings_table_model::load_current_settings(file_name);
 
 	process_filter();
+}
 
+void Settings_list_widget::load_settings_and_emit_change(const QString& file_name) {
+	table_model->load_settings_and_emit_change(file_name);
 }
 void Settings_list_widget::save_button(bool) {
 	QSettings settings;

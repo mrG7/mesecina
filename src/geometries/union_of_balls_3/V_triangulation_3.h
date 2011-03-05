@@ -95,7 +95,7 @@ public:
 
 	struct Cell_handle_hash : public std::unary_function<Cell_handle, std::size_t> {
 		std::size_t operator()(Cell_handle const& ch) const {
-			std::size_t seed = 0;
+//			std::size_t seed = 0;
 			boost::hash<Cell*> hasher;
 			return hasher(&(*ch));
 		}
@@ -103,7 +103,7 @@ public:
 
 	struct Polar_vertex_handle_hash : public std::unary_function<Polar_vertex_handle, std::size_t> {
 		std::size_t operator()(Polar_vertex_handle const& v) const {
-			std::size_t seed = 0;
+//			std::size_t seed = 0;
 			boost::hash<void*> hasher;
 			return hasher(&(*v));
 		}
@@ -265,7 +265,8 @@ public:
 							vertices[c] = ball_centers[ball];
 							unique_vertices.push_back(p);
 							unique_radii.push_back(radius);
-							v = unique_triangulation.insert(p);
+							if (v == D_vertex_handle()) v = unique_triangulation.insert(p);
+							else v = unique_triangulation.insert(p, v->cell());
 							v->info() = vertices[c];
 						} else {
 							// vertex is close, take the index of the close vertex
@@ -321,7 +322,7 @@ public:
 
 
 		// collect valid (non-zero volume) polygons as list of referenced vertices
-		All_edges_iterator e_it, e_end = all_edges_end(); int counter = 0;
+		All_edges_iterator e_it, e_end = all_edges_end();// int counter = 0;
 		for (e_it=all_edges_begin(); e_it!=e_end; ++e_it) {
 			if (is_medial_interior_voronoi_facet(*e_it)) {
 				Cell_circulator c_start, c_circ = incident_cells(*e_it);
@@ -375,7 +376,45 @@ public:
 		myfile.close();	
 	}
 
-	void write_medial_axis_to_moff(const std::string& file_name) {
+	void write_less_medial_balls(const std::string& file_name)  {
+		Cell_map vertices;
+		std::list<Point_3> unique_vertices;
+		std::list<double> unique_radii;
+		create_unique_vertices_container(unique_vertices, unique_radii, vertices);
+
+		std::ofstream myfile;
+		myfile.open (file_name.c_str());
+		myfile.precision(dbl::digits10);
+
+		// write header
+		myfile << "WOFF " << unique_vertices.size() << " 0 0" << std::endl;
+
+		// write vertices
+		std::list<Point_3>::iterator p_it, p_end = unique_vertices.end();
+		std::list<double>::iterator r_it, r_end = unique_radii.end();
+		for (r_it =unique_radii.begin(), p_it=unique_vertices.begin(); p_it!=p_end; ++p_it, ++r_it) {
+			myfile << std::fixed << p_it->x() << " " 
+				   << std::fixed << p_it->y() << " " 
+				   << std::fixed << p_it->z() << " " 
+				   << std::fixed << *r_it << std::endl;
+		}
+		std::cout << "Written " << unique_vertices.size() << " balls." << std::endl;
+		myfile.close();
+
+	}
+
+	std::string create_sorted_polygon_string(std::vector<double> polygon) {
+		std::ostringstream stm;
+		std::sort(polygon.begin(),polygon.end()); // sort is temporary because we pass polygon by valu
+		std::vector<double>::iterator p_it = polygon.begin();
+		for (int i=0; i < polygon.size(); i++, p_it++) {
+			stm << *p_it;
+			stm << " ";
+		}
+		return stm.str();
+	}
+
+	void write_medial_axis_to_moff(std::ostream& myfile, double growth_ratio) {
 		std::cout << "Write simplified medial axis to MOFF file" << std::endl;
 
 		Cell_map vertices;
@@ -383,15 +422,17 @@ public:
 		std::list<double> unique_radii;
 		create_unique_vertices_container(unique_vertices, unique_radii, vertices);
 
-		std::list< std::list<double> > valid_polygons;
+		std::list< std::vector<double> > valid_polygons;
 
+		std::set<std::string> unique_polygons;
 		// collect valid (non-zero volume) polygons as list of referenced vertices
 		All_edges_iterator e_it, e_end = all_edges_end(); int counter = 0;
 		for (e_it=all_edges_begin(); e_it!=e_end; ++e_it) {
 			if (is_medial_interior_voronoi_facet(*e_it)) {
 				Cell_circulator c_start, c_circ = incident_cells(*e_it);
 				c_start = c_circ; 
-				std::list<double> pol; int previous_index = -1;
+				std::vector<double> pol; int previous_index = -1;
+				bool all_interior = true;
 				do {
 					if (!is_infinite(c_circ) && c_circ->get_medial_classification() == M_INTERIOR) { 
 						int index = vertices[c_circ];
@@ -399,27 +440,36 @@ public:
 							pol.push_back(index);
 							previous_index = index;
 						}
-					} 
+					} else all_interior = false;
 					c_circ++;
 				} while (c_circ!=c_start);
 				if (previous_index == *pol.begin()) pol.pop_back();
-				if (pol.size() > 2) {
+				if (pol.size() > 2 &&
+					(all_interior==true || !Application_settings::get_bool_setting("ignore-incomplete-v-voronoi-faces-for-medial-axis"))) {
 					Edge e = *e_it;
-					pol.push_back(angle_values[create_vertex_pair_from_edge(e)]);
-					pol.push_back(lambda_value(e));
-					valid_polygons.push_back(pol);
+					std::string pol_str = create_sorted_polygon_string(pol);
+					if (unique_polygons.find(pol_str) == unique_polygons.end()) {
+						pol.push_back(angle_values[create_vertex_pair_from_edge(e)]);
+						pol.push_back(lambda_value(e));
+						Point p = e.first->vertex(e.second)->point();
+						pol.push_back(CGAL::to_double(p.x()));
+						pol.push_back(CGAL::to_double(p.y()));
+						pol.push_back(CGAL::to_double(p.z()));
+						valid_polygons.push_back(pol);
+						unique_polygons.insert(pol_str);
+					} else {
+//						std::cout << LOG_GREEN << "duplicate polygon eliminated " << pol_str << std::endl;
+					}
 				}
 			}
 		}
 		std::cout << "Found " << valid_polygons.size() << " unique polygons" << std::endl;
 
-		// open file
-		std::ofstream myfile;
-		myfile.open (file_name.c_str());
+
 		myfile.precision(dbl::digits10);
 
 		// write header
-		myfile << "MOFF " << unique_vertices.size() << " " << valid_polygons.size() << " 0" << std::endl;
+		myfile << "MOFF " << unique_vertices.size() << " " << valid_polygons.size() << " " << growth_ratio << std::endl;
 
 		// write vertices
 		std::list<Point_3>::iterator p_it, p_end = unique_vertices.end();
@@ -432,12 +482,12 @@ public:
 		}
 
 		// write polygons
-		std::list< std::list<double> >::iterator pol_it, pol_end = valid_polygons.end();
+		std::list< std::vector<double> >::iterator pol_it, pol_end = valid_polygons.end();
 		for (pol_it = valid_polygons.begin(); pol_it!=pol_end; pol_it++) {
-			std::list<double>& pol = *pol_it;
-			int pol_vert_number = pol.size()-2;
+			std::vector<double>& pol = *pol_it;
+			int pol_vert_number = pol.size()-5;
 			myfile << pol_vert_number;
-			std::list<double>::iterator p_it, p_end = pol.end(); int counter =0;
+			std::vector<double>::iterator p_it, p_end = pol.end(); int counter =0;
 			for (p_it=pol.begin(); p_it!=p_end; ++p_it, ++counter) {
 				if (counter<pol_vert_number)
 					myfile << " " << (int)(*p_it);
@@ -446,9 +496,18 @@ public:
 			}
 			myfile <<  std::endl;
 		}
+	}
+
+	void write_medial_axis_to_moff(const std::string& file_name, double growth_ratio) {
+		// open file
+		std::ofstream myfile;
+		myfile.open (file_name.c_str());
+
+		write_medial_axis_to_moff(myfile, growth_ratio);
 
 		// close file
 		myfile.close();	
+
 	}
 
 	void  write_medial_axis_to_off(const std::string& file_name) {
@@ -772,8 +831,33 @@ public:
 
 		}
 		std::cout << PROGRESS_DONE << std::endl;
+	}
+
+	void collect_medial_edges() {
+		std::cout << PROGRESS_STATUS << "Collecting medial edges" << std::endl;
+		medial_edges.clear();
+		All_edges_iterator e_it, e_end = all_edges_end();
+		int counter = 0, all_edges = 0;
+		for (e_it=all_edges_begin(); e_it!=e_end; ++e_it, ++all_edges) {
+
+			Cell_circulator c_start, c_circ = incident_cells(*e_it);
+			c_start = c_circ;
+			std::list<Point_3> polygon;
+			bool all_interior = true;
+			do {
+				if (!is_infinite(c_circ) && c_circ->get_medial_classification() == M_INTERIOR) { 
+					polygon.push_back(voronoi_vertex(c_circ));
+					//						std::cout << t->dual(c_circ) << std::endl;
+				} else all_interior = false;
+				c_circ++;
+			} while (c_circ!=c_start);
+			if (polygon.size()>2 && (all_interior==true || !Application_settings::get_bool_setting("ignore-incomplete-v-voronoi-faces-for-medial-axis"))) {
+				medial_edges.insert(create_vertex_pair_from_edge(*e_it));
+			}
+		}
 
 
+		std::cout << PROGRESS_DONE << std::endl;
 	}
 
 	double lambda_value(Edge& e) {
@@ -827,7 +911,7 @@ public:
 
 		//fill front with the inital front faces
 //		std::cout << "compute_topology angle filtration" << std::endl;
-		All_edges_iterator e_it, e_end = all_edges_end(); int medial =0;
+		All_edges_iterator e_it, e_end = all_edges_end();// int medial =0;
 		for (e_it=all_edges_begin(); e_it!=e_end; ++e_it) {
 //			if (is_medial_interior_voronoi_facet(*e_it)) medial++;
 			if (is_front_voronoi_facet(*e_it)) {
@@ -1464,6 +1548,7 @@ public:
 	Edges_with_doubles angle_values;
 	Edges_with_doubles topology_angle_values;
 	Edges_set visited_edges;
+	Edges_set medial_edges;
 	std::multimap<double, Vertex_pair> front;
 
 private:

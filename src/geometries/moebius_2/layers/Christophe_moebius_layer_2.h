@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include <CGAL/Cartesian.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Moebius_diagram_2.h>
 #include <CGAL/Moebius_diagram_euclidean_traits_2.h>
 
@@ -20,7 +21,8 @@ public:
 	Christophe_moebius_layer_2(const QString& name, Moebius_2* m, QString ttip) : GL_draw_layer_2(name, ttip), parent(m) {
 	}
 
-	typedef typename CGAL::Cartesian<double> MK;
+	typedef typename CGAL::Exact_predicates_inexact_constructions_kernel MK;
+//	typedef typename CGAL::Cartesian<double> MK;
 	typedef double MW;
 	typedef CGAL::Moebius_diagram_euclidean_traits_2<MK,MW> MGt;
 	typedef CGAL::Moebius_diagram_2<MGt> M;

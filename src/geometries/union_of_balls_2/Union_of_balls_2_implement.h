@@ -28,7 +28,7 @@
 
 template <class K>
 Union_of_balls_2<K>::Union_of_balls_2(std::string b_source, std::string pre) : Geometry(), has_ball_triangulation(false), 
-	has_v_triangulation(false), ball_source(b_source), prefix(pre), has_medial_balls(false) {
+	has_v_triangulation(false), ball_source(b_source), prefix(pre), has_medial_balls(false), has_convex_balls(false) {
 
 	if (ball_source != SHARED_GROWN_BALLS_FROM_MOEBIUS) {
 		// balls themselves
@@ -94,6 +94,13 @@ Union_of_balls_2<K>::Union_of_balls_2(std::string b_source, std::string pre) : G
 		GL_draw_layer_2* ball_medial_disks_layer = new Ball_medial_axis_transform_layer_2< Union_of_balls_2<K> >((prefix+" ball medial disks").c_str(), this, "Sampled disks from medial axis of grown balls", false, false, true);
 		add_layer(ball_medial_disks_layer);
 
+		GL_draw_layer_2* ball_convex_centers_layer = new Ball_medial_axis_transform_layer_2< Union_of_balls_2<K> >((prefix+" ball convex centers").c_str(), this, "Sampling of convex hull of grown balls", false, true, true, false, true);
+		add_layer(ball_convex_centers_layer);
+		GL_draw_layer_2* ball_convex_circles_layer = new Ball_medial_axis_transform_layer_2< Union_of_balls_2<K> >((prefix+" ball convex circles").c_str(), this, "Sampled circles from convex hull of grown balls", false, false, false, false, true);
+		add_layer(ball_convex_circles_layer);
+		GL_draw_layer_2* ball_convex_disks_layer = new Ball_medial_axis_transform_layer_2< Union_of_balls_2<K> >((prefix+" ball convex disks").c_str(), this, "Sampled disks from convex hull of grown balls", false, false, true, false, true);
+		add_layer(ball_convex_disks_layer);
+
 		// scale axis balls
 		GL_draw_layer_2* ball_sa_circles_layer = new Ball_medial_axis_transform_layer_2< Union_of_balls_2<K> >((prefix+" scale axis circles").c_str(), this, "Sampled circles from the scale axis", false, false, false, true);
 		add_layer(ball_sa_circles_layer);
@@ -109,6 +116,7 @@ Union_of_balls_2<K>::Union_of_balls_2(std::string b_source, std::string pre) : G
 		Application_settings::add_bool_setting("ball-medial-axis-follow-scale-limit", false);
 	}
 
+	Application_settings::add_double_setting("ball-convex-combination-max-shrink",0.1);
 	Application_settings::add_double_setting("medial-ball-sampling-min-angle-for-scale-axis", 175);
 	double small_angle = 180.0 - Application_settings::get_double_setting("medial-ball-sampling-min-angle-for-scale-axis");
 	small_angle = small_angle < 0 ? 0.0 : small_angle;
@@ -116,6 +124,33 @@ Union_of_balls_2<K>::Union_of_balls_2(std::string b_source, std::string pre) : G
 
 	Application_settings::add_double_setting("alpha-value-for-dual-of-union-of-balls",  0);
 
+}
+
+template <class K>
+void Union_of_balls_2<K>::save_balls(QString file_name,std::list<Point3D>* points) {
+
+	
+	if (points) {
+		// open file
+		QFile f(file_name);
+		if ( !f.open( QIODevice::WriteOnly ) ) {
+			std::cout << "File " << file_name.toStdString() << " could not be open for writing!" << std::endl;
+			return;
+		}
+
+
+		QTextStream fs( &f );
+
+		fs << tr("WPOFF %1 0 0\n").arg((uint)points->size());
+		std::list<Point3D>::iterator p_it, p_end = points->end();
+
+		for (p_it = points->begin(); p_it != p_end; p_it++)
+
+			fs << tr("%1 %2 %3\n").arg(p_it->x, 0, 'f', 9).arg(p_it->y, 0, 'f', 9).arg(p_it->z, 0, 'f', 9);
+
+		f.close();
+		std::cout << (uint)points->size() << " balls written in "<<file_name.toStdString() << std::endl;
+	}
 }
 
 template <class K>
@@ -187,6 +222,8 @@ Geometry* Union_of_balls_2<K>::clone() {
 	new_union_of_balls->has_v_triangulation = has_v_triangulation;
 	new_union_of_balls->has_medial_balls = has_medial_balls;
 	new_union_of_balls->medial_balls = medial_balls;
+	new_union_of_balls->has_convex_balls = has_convex_balls;
+	new_union_of_balls->convex_balls = convex_balls;
 	new_union_of_balls->orig_medial_balls = orig_medial_balls;
 	new_union_of_balls->random_tokens = random_tokens;
 	new_union_of_balls->orig_points = orig_points;
@@ -202,6 +239,7 @@ void Union_of_balls_2<K>::invalidate_cache(bool set_has_ball_triangulation = fal
 	has_ball_triangulation = set_has_ball_triangulation;
 	has_v_triangulation = false;
 	has_medial_balls = false;
+	has_convex_balls = false;
 	medial_balls.clear();
 	ball_triangulation.set_dirty();
 	v_triangulation.set_dirty();
@@ -211,6 +249,7 @@ template <class K>
 void Union_of_balls_2<K>::application_settings_changed(const QString& settings_name) {
 	if (settings_name=="medial-ball-sampling-min-angle-for-scale-axis") {
 		has_medial_balls = false;
+		has_convex_balls = false;
 
 		double small_angle = 180.0 - Application_settings::get_double_setting("medial-ball-sampling-min-angle-for-scale-axis");
 		small_angle = small_angle < 0 ? 0.0 : small_angle;
@@ -547,7 +586,11 @@ void Union_of_balls_2<K>::add_medial_balls_between(typename Union_of_balls_2<K>:
 												   typename Union_of_balls_2<K>::Point_2& c2, 
 												   typename Union_of_balls_2<K>::NT& w2, 
 												   typename Union_of_balls_2<K>::Point_2& intersection,
-												   bool debug_this = false) {
+												   std::list<Circle_2>* container = 0
+												   ) {
+
+    if (container==0) container = &medial_balls;
+	bool debug_this = false;
 	double c1x = CGAL::to_double(c1.x());
 	double c1y = CGAL::to_double(c1.y());				
 	double c2x = CGAL::to_double(c2.x());
@@ -561,7 +604,11 @@ void Union_of_balls_2<K>::add_medial_balls_between(typename Union_of_balls_2<K>:
 	//			}
 	double d_sq = (c1x-c2x)*(c1x-c2x) + (c1y-c2y)*(c1y-c2y);
 	double d = sqrt(d_sq);
-	double sr_sq = CGAL::to_double(ball_triangulation.get_shrink_ratio())*CGAL::to_double(ball_triangulation.get_shrink_ratio());
+	double sr_sq;
+	if (container==&medial_balls)
+		sr_sq = CGAL::to_double(ball_triangulation.get_shrink_ratio())*CGAL::to_double(ball_triangulation.get_shrink_ratio());
+	else
+		sr_sq = Application_settings::get_double_setting("ball-convex-combination-max-shrink") *Application_settings::get_double_setting("ball-convex-combination-max-shrink");
 	double r1_sq = CGAL::to_double(w1)* sr_sq;
 	double r1 = sqrt(r1_sq);
 	double r2_sq = CGAL::to_double(w2)* sr_sq;
@@ -585,9 +632,9 @@ void Union_of_balls_2<K>::add_medial_balls_between(typename Union_of_balls_2<K>:
 		if ((vx-fx)*(vx-fx) + (vy-fy)*(vy-fy) > MAX_CROSSING_V_VORONOI_SQUARED) {
 			NT w = squared_distance(midcenter, intersection);
 			if (debug_this) std::cout <<  LOG_BLUE << "split with: " << midcenter << "    -w: " << CGAL::to_double(w) << std::endl;
-			medial_balls.push_back(Circle_2(midcenter, w));
-			add_medial_balls_between(c1, w1, midcenter, w, intersection, debug_this);
-			add_medial_balls_between(midcenter, w, c2, w2, intersection, debug_this);
+			container->push_back(Circle_2(midcenter, w));
+			add_medial_balls_between(c1, w1, midcenter, w, intersection, container);
+			add_medial_balls_between(midcenter, w, c2, w2, intersection, container);
 		}
 
 	}
@@ -597,7 +644,9 @@ template <class K>
 void Union_of_balls_2<K>::add_medial_balls_between(typename Union_of_balls_2<K>::Point_2& c1, 
 												   typename Union_of_balls_2<K>::NT& w1, 
 												   typename Union_of_balls_2<K>::Point_2& c2, 
-												   typename Union_of_balls_2<K>::NT& w2) {
+												   typename Union_of_balls_2<K>::NT& w2,
+												    std::list<Circle_2>* container = 0) {
+	if (container==0) container = &medial_balls;
 	double vx = CGAL::to_double(c1.x());
 	double vy = CGAL::to_double(c1.y());
 	double fx = CGAL::to_double(c2.x());
@@ -605,10 +654,51 @@ void Union_of_balls_2<K>::add_medial_balls_between(typename Union_of_balls_2<K>:
 	if ((vx-fx)*(vx-fx) + (vy-fy)*(vy-fy) > MAX_CROSSING_V_VORONOI_SQUARED) {
 		Point_2 int1, int2;
 		if (intersect_ball_ball(Weighted_point(c1,w1), Weighted_point(c2,w2), int1, int2)) {
-			add_medial_balls_between(c1, w1, c2, w2, int1);
+			add_medial_balls_between(c1, w1, c2, w2, int1, container);
 		}
 
 	}
+}
+
+template <class K>
+std::list<typename Union_of_balls_2<K>::Circle_2>* Union_of_balls_2<K>::get_convex_balls() {
+	typedef typename Ball_triangulation_2::Finite_edges_iterator			Ball_finite_edges_iterator;
+	typedef typename Ball_triangulation_2::Face_handle									Ball_face_handle;
+	typedef typename Ball_triangulation_2::Vertex_handle									Ball_vertex_handle;
+
+	Ball_triangulation_2* t = get_dual_ball_triangulation();
+	if (!has_convex_balls) {
+		convex_balls.clear();
+		std::set<Ball_vertex_handle> added;
+
+		for (Ball_finite_edges_iterator e_it = t->finite_edges_begin(), e_end = t->finite_edges_end();	e_it != e_end; ++e_it) {
+			Ball_vertex_handle v1 = e_it->first->vertex((e_it->second+1)%3);
+			Ball_vertex_handle v2 = e_it->first->vertex((e_it->second+2)%3);
+			if ( e_it->first->get_classification( e_it->second) == U_REGULAR ||
+				 e_it->first->get_classification( e_it->second) == U_SINGULAR ) {
+
+				Point_2 vorf = v1->point().point(); NT wf, wnF;
+				Point_2 vornF = v2->point().point();
+				wf = v1->point().weight();
+				wnF = v2->point().weight();;
+				if (added.find(v1) == added.end()) {
+					convex_balls.push_back(Circle_2(vorf,  wf));
+					added.insert(v1);
+
+				}
+				if (added.find(v2) == added.end()) {
+					convex_balls.push_back(Circle_2(vornF,  wnF));
+					added.insert(v2);
+				}
+				add_medial_balls_between(vorf, wf, vornF, wnF, &convex_balls);
+
+			}
+		}
+
+
+	}
+
+	return &convex_balls;
 }
 
 template <class K>

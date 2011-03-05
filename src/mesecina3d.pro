@@ -31,11 +31,12 @@ win32 {
 	
 	CONFIG(debug, debug|release) {
 		LIBS += medial_explore_3d.lib
-		LIBS += moebius_3d.lib		
+		LIBS += moebius_3d.lib	
 		LIBS += skin_surface_3d.lib	
 		LIBS += union_of_balls_3d.lib	
 		LIBS += power_crust_3d.lib
 		LIBS += mesh_view_3d.lib
+		LIBS += medrep_view_3d.lib
 		LIBS += gl_widget_3d.lib
 		LIBS += QGLViewer2d.lib
 	} else {
@@ -45,6 +46,7 @@ win32 {
 		LIBS += union_of_balls_3.lib	
 		LIBS += power_crust_3.lib
 		LIBS += mesh_view_3.lib
+		LIBS += medrep_view_3.lib
 		LIBS += gl_widget_3.lib
 		LIBS += QGLViewer2.lib
 	}	

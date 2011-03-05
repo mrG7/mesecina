@@ -31,6 +31,7 @@ double round(double x) {
 }
 
 GL_widget_2::GL_widget_2(QWidget * parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent), renderer_type(OPEN_GL), use_display_lists(true) {
+	std::cout << "widget constructor called" << std::endl;	
 	xmin = xmin_old = -300;
 	xmax = xmax_old = 100;
 	ymin = ymin_old = -300;
@@ -878,7 +879,11 @@ void GL_widget_2::application_settings_changed(const QString& settings_name) {
 		want_repaint = false;
 	}
 
-	if (settings_name=="npr-render") { switch_render_effect(); repaint(); }
+	if (settings_name=="npr-render") {
+		if (rendering_effect != RENDERING_NORMAL ^ Application_settings::get_bool_setting("npr-render")) {
+			switch_render_effect(); repaint(); 
+		}
+	}
 	if (settings_name=="npr-render-paper") repaint();
 	if (settings_name=="npr-render-distortion") {
 		QSettings settings;

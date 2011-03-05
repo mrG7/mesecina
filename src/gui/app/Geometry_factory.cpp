@@ -17,6 +17,7 @@
 //#include <geometries/structure_3/Asia_structure_3.h>
 #include <geometries/moebius_3/Moebius_3.h>
 #include <geometries/medial_explore_3/Medial_explore_3.h>
+#include <geometries/medrep_view_3/Medrep_view_3.h>
 
 #include <geometries/union_of_balls_3/Union_of_balls_3.h>
 #include <geometries/union_of_balls_3/Union_of_balls_3_implement.h>
@@ -45,14 +46,18 @@ void Geometry_factory::fill_available_geometries() {
 //	available_geometries.push_back("Union of balls - lazy exact");
 	available_geometries.push_back("Skin surface");
 	available_geometries.push_back("Skin surface - scale surface");
-	//available_geometries.push_back("Structure");
+//	available_geometries.push_back("Structure");
 	available_geometries.push_back("Moebius");
 	available_geometries.push_back("Medial explore");
+	available_geometries.push_back("Medrep view");
 }
 
 Geometry* Geometry_factory::create_new_geometry(const std::string& name) {
 	if (name == "Mesh view") {
 		return new Mesh_view_3();
+	}
+	if (name == "Medrep view") {
+		return new Medrep_view_3();
 	}
 	if (name == "Medial explore") {
 		return new Medial_explore_3();
@@ -60,9 +65,9 @@ Geometry* Geometry_factory::create_new_geometry(const std::string& name) {
 	if (name == "Moebius") {
 		return new Moebius_double_3();
 	}
-	//if (name == "Structure") {
-	//	return new Asia_structure_3();
-	//}
+//	if (name == "Structure") {
+//		return new Asia_structure_3();
+//	}
 	if (name == "Power crust - double") {
 		return new Power_crust_double_3();
 	}
@@ -124,6 +129,7 @@ std::list<std::string> Geometry_factory::conflicts_with(const std::string& name)
 #include <geometries/second_voronoi_2/Second_voronoi_2_implement.h>
 #include <geometries/witness_2/Witness_2.h>
 #include <geometries/witness_2/Witness_2_implement.h>
+#include <geometries/scale_analysis_2/Scale_analysis_2.h>
 
 extern template class __declspec(dllimport) Power_crust_2<Double_kernel>;
 extern template class __declspec(dllimport) Power_crust_2<Exact_kernel>;
@@ -167,11 +173,15 @@ void Geometry_factory::fill_available_geometries() {
 	available_geometries.push_back("Witness complex - lazy exact");	
 	available_geometries.push_back("Landmark 2nd Voronoi - double");
 	available_geometries.push_back("Landmark 2nd Voronoi - lazy exact");	
+	available_geometries.push_back("Scale analysis - double");	
 }
 
 Geometry* Geometry_factory::create_new_geometry(const std::string& name) {
 	std::cout << "creating geometry " << name << std::endl;
 
+	if (name == "Scale analysis - double") {
+		return new Scale_analysis_2();
+	}
 	if (name == "Power crust - double") {
 		return new Power_crust_double_2();
 	}
@@ -243,6 +253,9 @@ std::list<std::string> Geometry_factory::depends_on(const std::string& name) {
 		names.push_back("Power crust - lazy exact");
 	}
 	if (name == "Second order Voronoi - double") {
+		names.push_back("Power crust - double");
+	}
+	if (name == "Scale analysis - double") {
 		names.push_back("Power crust - double");
 	}
 	return names;

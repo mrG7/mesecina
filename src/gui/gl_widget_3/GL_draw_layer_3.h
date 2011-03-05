@@ -36,6 +36,8 @@ public:
 	GL_draw_layer_3(const QString& n, const QString& ttip);
 	~GL_draw_layer_3();
 
+	virtual void prepare_draw() {};
+	virtual void unprepare() {};
 	virtual void draw_commands() {};
 
 	virtual bool has_valid_cache();
@@ -125,6 +127,7 @@ private:
 	bool cache_has_data;
 
 	GLuint display_list;
+	bool is_prepared;
 };
 
 #define SCALAR_FILTERING_CODE 	if (l.scalar_flag == GL_draw_layer_3::DO_SCALAR || l.scalar_flag == GL_draw_layer_3::DO_INVERSE_SCALAR) {\

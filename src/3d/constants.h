@@ -29,6 +29,7 @@
 #define SHARED_INNER_POLES "inner poles"
 #define SHARED_INNER_DOUBLE_BALLS "inner poles double"
 #define SHARED_SCALE_DOUBLE_BALLS "scale balls double"
+#define SHARED_MOFF_STRING "moff string"
 
 
 #define PROGRESS_HEADER "Progress"

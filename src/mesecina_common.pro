@@ -16,6 +16,8 @@ HEADERS += console/Console_logger.h console/Console_logger_buffer.h console/Cons
 win32 {
 	# compile visual studio project file
 	TEMPLATE = vcapp
+	
+	DEFINES += BUILDDATE=\\\"$$system('echo %date%')\\\"
 
 	# vcproj file should have filters as directories
 	CONFIG -= flat

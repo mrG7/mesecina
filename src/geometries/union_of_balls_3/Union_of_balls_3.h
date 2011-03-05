@@ -14,6 +14,7 @@
 #include <CGAL/Regular_triangulation_3.h>
 #include <CGAL/Weighted_alpha_shape_euclidean_traits_3.h>
 #include <CGAL/Alpha_shape_3.h>
+#include <CGAL/Polyhedron_3.h>
 
 #include "V_triangulation_3.h"
 
@@ -56,8 +57,9 @@ public:
 	typedef V_triangulation_3<K,WTds>				V_triangulation_3;
 	typedef typename V_triangulation_3::Vertex_handle			V_vertex_handle;
 	typedef typename V_triangulation_3::Edges_with_doubles Edges_with_doubles;
+	typedef typename V_triangulation_3::Edges_set Edges_set;
 
-
+	typedef CGAL::Polyhedron_3<K>								Polyhedron;
 
 	Union_of_balls_3();
 	virtual ~Union_of_balls_3();
@@ -95,22 +97,31 @@ public:
 	Edges_with_doubles* get_angle_filtered_medial_axis();
 	Edges_with_doubles* get_topology_angle_filtered_medial_axis();
 	Edges_with_doubles* get_scale_filtered_medial_axis();
+	Edges_set* get_medial_axis();
+	std::string* get_moff_string();
+
+	Polyhedron* get_boundary_polyhedron();
+	void mesh_union_boundary_implicit();
 
 	void write_medial_axis_to_off(const std::string& file_name);
 	void write_simplified_medial_axis_to_off(const std::string& file_name);
 	void write_medial_axis_to_moff(const std::string& file_name);
-	
+	void write_less_medial_balls(const std::string& file_name);
+
+	void update_ball_scaling();
 
 
 //protected:
 	static bool intersect_ball_line(const Weighted_point &wp, const Line_3 &l, Point_3 &ip1, Point_3 &ip2);
 
 public:
-	Alpha_shape_3 alpha_shape;
+	Alpha_shape_3* alpha_shape;
+	Polyhedron surface_polyhedron;
 	std::list<Point4D> points, scale_balls;
 	V_triangulation_3 v_triangulation;
-	bool has_alpha_shape, has_v_triangulation, is_v_edges_classified, is_v_cell_flooded, has_local_filtered_medial_axis, has_topology_angle_ma, has_scale_filtered_medial_axis;
+	bool has_moff_string, has_boundary_surface, has_alpha_shape, has_v_triangulation, is_v_edges_classified, is_v_cell_flooded, has_local_filtered_medial_axis, has_topology_angle_ma, has_scale_filtered_medial_axis, has_medial_edges;
 	double growth_ratio;
+	std::string moff_string;
 	int topology_filtration_steps;
 };
 

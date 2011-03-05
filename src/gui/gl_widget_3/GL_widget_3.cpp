@@ -326,72 +326,80 @@ void GL_widget_3::keyPressEvent(QKeyEvent *e)
 	}
 
 	if (e->key() == Qt::Key_O && e->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier)) {
-		qglviewer::ManipulatedCameraFrame* frame = camera()->frame();
-		QDomDocument doc;
-		QDomElement el = frame->domElement("qglview-camera",doc);
-		doc.appendChild(el);
-		
-		QSettings settings;
-		QString file_name = QFileDialog::getSaveFileName(
-			this,
-			"Choose a filename to save view",
-			settings.value("last-data-directory",QString()).toString(),
-			"View files (*.view)");
-		if (file_name=="") return;
-		if (!file_name.endsWith(".view")) file_name += ".view";
-		QString save_directory = file_name;
-		save_directory.truncate(file_name.lastIndexOf('/'));
-		settings.setValue("last-data-directory",save_directory);
-
-		QFile f(file_name);
-		if ( !f.open( QIODevice::WriteOnly ) ) {
-			std::cout << LOG_ERROR << tr("File `%1' could not be open for writing!").arg(file_name).toStdString() << std::endl;
-			return;
-		}
-		QTextStream fs( &f );
-		fs << doc.toString();
-		f.close();
-
-		std::cout << "Camera view stored in " << file_name.toStdString()  << std::endl;
 	}
 	if (e->key() == Qt::Key_O && e->modifiers() == (Qt::ControlModifier | Qt::AltModifier)) {
-		QSettings settings;
-
-		QString file_name = QFileDialog::getOpenFileName(
-			this,
-			"Choose a filename to load view",
-			settings.value("last-data-directory",QString()).toString(),
-			"View files (*.view)");
-		if (file_name!="") {
-			if (!file_name.endsWith(".view")) file_name += ".view";
-			QString save_directory = file_name;
-			save_directory.truncate(file_name.lastIndexOf('/'));
-			settings.setValue("last-data-directory",save_directory);
-
-			QFile file(file_name);
-			if (!file.open(QIODevice::ReadOnly)) {
-				std::cout << LOG_ERROR << tr("File `%1' could not be open for reading!").arg(file_name).toStdString() << std::endl;
-				return;
-			}
-			QDomDocument doc;
-			if (!doc.setContent(&file)) {
-				std::cout << LOG_ERROR << tr("File `%1' can not be parsed to an xml").arg(file_name).toStdString() << std::endl;
-				file.close();
-				return;
-			}
-			file.close();
-
-			QDomElement camera_element = doc.documentElement();
-			camera()->frame()->initFromDOMElement(camera_element);
-			repaint();
-			std::cout << "Camera view reloaded from " << file_name.toStdString() << std::endl;
-		}
 
 
 	}
 
 	QGLViewer::keyPressEvent(e);
 }
+
+
+void GL_widget_3::save_view(bool) {
+	qglviewer::ManipulatedCameraFrame* frame = camera()->frame();
+	QDomDocument doc;
+	QDomElement el = frame->domElement("qglview-camera",doc);
+	doc.appendChild(el);
+
+	QSettings settings;
+	QString file_name = QFileDialog::getSaveFileName(
+		this,
+		"Choose a filename to save view",
+		settings.value("last-view-directory",QString()).toString(),
+		"View files (*.3view)");
+	if (file_name=="") return;
+	if (!file_name.endsWith(".3view")) file_name += ".3view";
+	QString save_directory = file_name;
+	save_directory.truncate(file_name.lastIndexOf('/'));
+	settings.setValue("last-view-directory",save_directory);
+
+	QFile f(file_name);
+	if ( !f.open( QIODevice::WriteOnly ) ) {
+		std::cout << LOG_ERROR << tr("File `%1' could not be open for writing!").arg(file_name).toStdString() << std::endl;
+		return;
+	}
+	QTextStream fs( &f );
+	fs << doc.toString();
+	f.close();
+
+	std::cout << "Camera view stored in " << file_name.toStdString()  << std::endl;
+}
+
+void GL_widget_3::load_view(bool) {
+	QSettings settings;
+
+	QString file_name = QFileDialog::getOpenFileName(
+		this,
+		"Choose a filename to load view",
+		settings.value("last-view-directory",QString()).toString(),
+		"View files (*.3view)");
+	if (file_name!="") {
+		if (!file_name.endsWith(".3view")) file_name += ".3view";
+		QString save_directory = file_name;
+		save_directory.truncate(file_name.lastIndexOf('/'));
+		settings.setValue("last-view-directory",save_directory);
+
+		QFile file(file_name);
+		if (!file.open(QIODevice::ReadOnly)) {
+			std::cout << LOG_ERROR << tr("File `%1' could not be open for reading!").arg(file_name).toStdString() << std::endl;
+			return;
+		}
+		QDomDocument doc;
+		if (!doc.setContent(&file)) {
+			std::cout << LOG_ERROR << tr("File `%1' can not be parsed to an xml").arg(file_name).toStdString() << std::endl;
+			file.close();
+			return;
+		}
+		file.close();
+
+		QDomElement camera_element = doc.documentElement();
+		camera()->frame()->initFromDOMElement(camera_element);
+		repaint();
+		std::cout << "Camera view reloaded from " << file_name.toStdString() << std::endl;
+	}
+}
+
 
 void GL_widget_3::keyReleaseEvent(QKeyEvent *e)
 {

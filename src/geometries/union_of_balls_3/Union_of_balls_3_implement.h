@@ -9,6 +9,8 @@
 #include "layers/Poisson_surface_layer_3.h"
 #include "layers/V_topology_filtration_debug_layer_3.h"
 
+#include "Union_surface_3.h"
+
 //#include "Medial_axis_structure_3.h"
 
 
@@ -18,7 +20,7 @@
 #define ALPHA_VALUE 0
 
 template <class K> 
-Union_of_balls_3<K>::Union_of_balls_3() : Geometry(), has_alpha_shape(false), alpha_shape(ALPHA_VALUE, Alpha_shape_3::GENERAL), has_topology_angle_ma(false), has_v_triangulation(false), is_v_edges_classified(false),is_v_cell_flooded(false), growth_ratio(1), has_local_filtered_medial_axis(false), has_scale_filtered_medial_axis(false), topology_filtration_steps(-1) {
+Union_of_balls_3<K>::Union_of_balls_3() : Geometry(), has_moff_string(false), has_alpha_shape(false), alpha_shape(0), has_topology_angle_ma(false), has_v_triangulation(false), is_v_edges_classified(false),is_v_cell_flooded(false), growth_ratio(1), has_local_filtered_medial_axis(false), has_scale_filtered_medial_axis(false), has_medial_edges(false), topology_filtration_steps(-1), has_boundary_surface(false) {
 
 	// alpha triangulation
 	GL_draw_layer_3* ball_centers_layer = new Alpha_triangulation_layer_3<Union_of_balls_3<K> >("Alpha centers",this, "Centers of the balls in the alpha shape", true, false, false, false, false, false);
@@ -139,7 +141,6 @@ Union_of_balls_3<K>::Union_of_balls_3() : Geometry(), has_alpha_shape(false), al
 	GL_draw_layer_3* nexte_layer = new V_topology_filtration_layer_3<Union_of_balls_3<K> >("Debug V next",this, "DEBUG", false, false, true, false, true);
 	add_layer(nexte_layer);
 
-
 	add_evolution("Grow balls");
 
 	Application_settings::add_bool_setting("debug-topology-filtration",false);
@@ -148,20 +149,26 @@ Union_of_balls_3<K>::Union_of_balls_3() : Geometry(), has_alpha_shape(false), al
 	if (Application_settings::get_bool_setting("debug-topology-filtration"))
 		topology_filtration_steps = Application_settings::get_int_setting("debug-topology-filtration-steps");
 
+	Application_settings::add_bool_setting("ignore-incomplete-v-voronoi-faces-for-medial-axis", true);
 
 	Application_settings::add_double_setting("growing-evolution-step-percentage",  3);
 	Application_settings::add_bool_setting("debug-front-propagation-instead-of-topology-filtering", false);
 	Application_settings::add_double_setting("alpha-value-for-dual-of-union-of-balls",  0);
 	Application_settings::add_bool_setting("v-cell-flooding-only-infinite-cells", false);
 	Application_settings::add_double_setting("medial-axis-export-vertex-squared-distance-collapse", 0);
-//	medial::Medial_axis_transform s;
-//	s.read_from_off("D:\\work\\mesecina\\models\\scale-axis\\3d\\10_random_balls_medial_axis.off");
-//	s.read_from_off("D:\\work\\mesecina\\models\\scale-axis\\3d\\3holes_medial_axis.off");
+
+	Application_settings::add_double_setting("implicit-mesher-bound-angle",30);
+	Application_settings::add_double_setting("implicit-mesher-bound-radius",0.1);
+	Application_settings::add_double_setting("implicit-mesher-bound-distance",0.1);
+
+	Application_settings::add_double_setting("input-balls-scale-factor",1);
 	
 }
 
 template <class K> 
-Union_of_balls_3<K>::~Union_of_balls_3() {}
+Union_of_balls_3<K>::~Union_of_balls_3() {
+	if (alpha_shape) delete alpha_shape;
+}
 
 template <class K>
 void Union_of_balls_3<K>::apply_modification(const std::string& name) {
@@ -183,7 +190,9 @@ void Union_of_balls_3<K>::apply_modification(const std::string& name) {
 		}
 
 		std::cout << PROGRESS_STATUS << "Building alpha shape after growing" << std::endl;
-		alpha_shape.make_alpha_shape(wps.begin(), wps.end());
+		if (alpha_shape != 0) delete alpha_shape;
+		alpha_shape = new Alpha_shape_3(wps.begin(), wps.end(), 
+			Application_settings::get_double_setting("alpha-value-for-dual-of-union-of-balls"), Alpha_shape_3::GENERAL);
 		std::cout << PROGRESS_DONE << std::endl;
 
 		add_variable("Ball scaling factor", ratio);
@@ -224,17 +233,23 @@ Geometry* Union_of_balls_3<K>::clone() {
 template <class K> 
 void Union_of_balls_3<K>::add_weighted_points(std::list<Point4D>* pts) {
 	points.clear();
+	growth_ratio = Application_settings::get_double_setting("input-balls-scale-factor");
+
+	double squared_scale_input_balls = Application_settings::get_double_setting("input-balls-scale-factor");
+	squared_scale_input_balls = squared_scale_input_balls * squared_scale_input_balls;
 	std::list< Weighted_point > wps;
 	std::list<Point4D>::iterator p_it, p_end = pts->end();
 	for (p_it = pts->begin(); p_it != p_end; ++p_it) {
 		wps.push_back(Weighted_point(
-			Bare_point(p_it->x,p_it->y,p_it->z),p_it->w));
+			Bare_point(p_it->x,p_it->y,p_it->z),squared_scale_input_balls*p_it->w));
 		points.push_back(*p_it);
 	}
 	std::cout << LOG_RED << "add_weighted_points point size: " << points.size() << std::endl;
 
 	std::cout << PROGRESS_STATUS << "Building alpha shape" << std::endl;
-	alpha_shape.make_alpha_shape(wps.begin(), wps.end());
+	if (alpha_shape != 0) delete alpha_shape;
+	alpha_shape = new Alpha_shape_3(wps.begin(), wps.end(), 
+		Application_settings::get_double_setting("alpha-value-for-dual-of-union-of-balls"), Alpha_shape_3::GENERAL);
 	std::cout << PROGRESS_DONE << std::endl;
 
 	// alpha values
@@ -249,10 +264,11 @@ void Union_of_balls_3<K>::add_weighted_points(std::list<Point4D>* pts) {
 
 	invalidate_cache();
 	has_alpha_shape = true;
-	add_variable("Balls",alpha_shape.number_of_vertices());
-	std::cout << "balls number in variables: " << alpha_shape.number_of_vertices() << std::endl;
+	add_variable("Balls",alpha_shape->number_of_vertices());
+	std::cout << "balls number in variables: " << alpha_shape->number_of_vertices() << std::endl;
 	emit announce_structure_changed(SHARED_INNER_DOUBLE_BALLS);
 	emit announce_structure_changed(SHARED_SCALE_DOUBLE_BALLS);
+	emit announce_structure_changed(SHARED_MOFF_STRING);
 //	emit do_widget_repaint();
 }
 
@@ -261,6 +277,7 @@ std::list<std::string>  Union_of_balls_3<K>::offer_structures() {
 	std::list<std::string> names;
 	names.push_back(SHARED_INNER_DOUBLE_BALLS);
 	names.push_back(SHARED_SCALE_DOUBLE_BALLS);
+	names.push_back(SHARED_MOFF_STRING);
 	return names;
 }
 
@@ -274,6 +291,10 @@ void*  Union_of_balls_3<K>::give_structure(const std::string& name) {
 		get_flooded_v_triangulation();
 		return &scale_balls;
 	}
+	if (name==SHARED_MOFF_STRING) {
+		return get_moff_string();
+	}
+
 }
 
 template <class K> 
@@ -283,6 +304,7 @@ typename Union_of_balls_3<K>::Alpha_shape_3* Union_of_balls_3<K>::get_alpha_shap
 		void* p = request_structure(SHARED_INNER_POLES);
 		if (!p) std::cout << LOG_ERROR << "Error getting the input balls from the Union_of_balls_3!" << std::endl;
 		else {
+			std::cout << LOG_WARNING << "Getting balls from other geometry into Union of balls this won't scale balls right now" << std::endl;
 			std::list< Weighted_point >* wps = static_cast<std::list< Weighted_point >*>(p);
 			std::list< Weighted_point >::iterator wp_it, wp_end = wps->end();
 			points.clear();
@@ -295,12 +317,14 @@ typename Union_of_balls_3<K>::Alpha_shape_3* Union_of_balls_3<K>::get_alpha_shap
 					));
 			}
 			std::cout << PROGRESS_STATUS << "Building alpha shape" << std::endl;
-			alpha_shape.make_alpha_shape(wps->begin(), wps->end());
+			if (alpha_shape != 0) delete alpha_shape;
+			alpha_shape = new Alpha_shape_3(wps->begin(), wps->end(), 
+				Application_settings::get_double_setting("alpha-value-for-dual-of-union-of-balls"), Alpha_shape_3::GENERAL);
 			std::cout << PROGRESS_DONE << std::endl;
 			has_alpha_shape = true;
 		}
 	}
-	return &alpha_shape;
+	return alpha_shape;
 }
 
 template <class K> 
@@ -308,25 +332,33 @@ typename Union_of_balls_3<K>::V_triangulation_3* Union_of_balls_3<K>::get_v_tria
 	if (!has_v_triangulation) {
 		v_triangulation.clear();
 		get_alpha_shape();
-		std::cout << "Alpha value: " << CGAL::to_double(alpha_shape.get_alpha()) << std::endl;
+		if (alpha_shape)
+			std::cout << "Alpha value: " << CGAL::to_double(alpha_shape->get_alpha()) << std::endl;
 		std::list<Alpha_facet>       facets;
-		if (alpha_shape.number_of_vertices() > 3) {
+		if (alpha_shape && alpha_shape->number_of_vertices() > 3) {
 			Point_3 p1, p2;
 
 			// singular facets
-			alpha_shape.get_alpha_shape_facets(std::back_inserter(facets), Alpha_shape_3::SINGULAR);
+			alpha_shape->get_alpha_shape_facets(std::back_inserter(facets), Alpha_shape_3::SINGULAR);
 			std::list<Alpha_facet>::iterator f_it, f_end = facets.end(); int i = 0;
 			std::cout << PROGRESS_STATUS << "Adding V points from singular facets" << std::endl;
 			std::cout << PROGRESS_MINIMUM << "0" << std::endl;
 			std::cout << PROGRESS_MAXIMUM <<  facets.size () << std::endl;
 			for (f_it = facets.begin() ;f_it!=f_end; f_it++,i++) {
 				std::cout << PROGRESS_VALUE << i << std::endl;
-				CGAL::Object o = alpha_shape.dual(*f_it);
+//				std::cout << "--" << std::endl;
+				CGAL::Object o = alpha_shape->dual(*f_it);
 				Line_3 l; Ray_3 r; Segment_3 s;
-				if (CGAL::assign(s,o)) l = s.supporting_line ();
-				if (CGAL::assign(r,o)) l = r.supporting_line ();
+				if (CGAL::assign(s,o)) {
+//					std::cout << "segment to line" << std::endl;
+					l = s.supporting_line ();
+				}
+				if (CGAL::assign(r,o)) {
+//					std::cout << "ray to line" << std::endl;
+					l = r.supporting_line ();
+				}
 				Weighted_point ball = f_it->first->vertex((f_it->second+1)%4)->point();
-				ball = Weighted_point(ball.point(), ball.weight() + alpha_shape.get_alpha());
+				ball = Weighted_point(ball.point(), ball.weight() + alpha_shape->get_alpha());
 				if (intersect_ball_line(ball, l, p1, p2)) {
 					v_triangulation.insert(p1, *f_it);
 					v_triangulation.insert(p2, *f_it);
@@ -339,26 +371,26 @@ typename Union_of_balls_3<K>::V_triangulation_3* Union_of_balls_3<K>::get_v_tria
 			facets.clear();
 
 			// regular facets
-			alpha_shape.get_alpha_shape_facets(std::back_inserter(facets), Alpha_shape_3::REGULAR);
+			alpha_shape->get_alpha_shape_facets(std::back_inserter(facets), Alpha_shape_3::REGULAR);
 			std::cout << PROGRESS_STATUS << "Adding V points from regular facets" << std::endl;
 			std::cout << PROGRESS_MINIMUM << "0" << std::endl;
 			std::cout << PROGRESS_MAXIMUM <<  facets.size () << std::endl;
 			f_end = facets.end(); i = 0;
 			for (f_it = facets.begin() ;f_it!=f_end; f_it++,i++) {
 				std::cout << PROGRESS_VALUE << i << std::endl;
-				CGAL::Object o = alpha_shape.dual(*f_it);
+				CGAL::Object o = alpha_shape->dual(*f_it);
 				Line_3 l; Ray_3 r; Segment_3 s;
 				if (CGAL::assign(s,o)) l = s.supporting_line ();
 				if (CGAL::assign(r,o)) l = r.supporting_line ();
 				Weighted_point ball = f_it->first->vertex((f_it->second+1)%4)->point();
-				ball = Weighted_point(ball.point(), ball.weight() + alpha_shape.get_alpha());
+				ball = Weighted_point(ball.point(), ball.weight() + alpha_shape->get_alpha());
 				if (intersect_ball_line(ball, l, p1, p2)) {
 					Alpha_cell_handle c = f_it->first; int id = f_it->second;
-					if (alpha_shape.classify(c) != Alpha_shape_3::INTERIOR) {
+					if (alpha_shape->classify(c) != Alpha_shape_3::INTERIOR) {
 						Alpha_cell_handle nc = c->neighbor(id);
 						int nid = nc->index(c);
 						c = nc; id = nid;
-						if (alpha_shape.classify(c) != Alpha_shape_3::INTERIOR) std::cout << LOG_ERROR << "regular face in dual has no interior cell neigbor?? error in V-point computation" << std::endl;
+						if (alpha_shape->classify(c) != Alpha_shape_3::INTERIOR) std::cout << LOG_ERROR << "regular face in dual has no interior cell neigbor?? error in V-point computation" << std::endl;
 					}
 					Plane_3 plane = Plane_3(c->vertex((id+1)%4)->point(),c->vertex((id+2)%4)->point(),c->vertex((id+3)%4)->point());
 					if (plane.oriented_side(p1) != plane.oriented_side(c->vertex(id)->point()))
@@ -411,7 +443,7 @@ typename Union_of_balls_3<K>::V_triangulation_3* Union_of_balls_3<K>::get_floode
 					sqradius/scale_back));
 			}
 		}
-		add_variable("Interior V voronoi vertices (size of scale balls", scale_balls.size());
+		add_variable("Interior V voronoi vertices (size of scale balls)", scale_balls.size());
 
 		//count voronoi faces in medial axis
 		int voroni_faces_in_medial_axis = 0;
@@ -441,6 +473,33 @@ typename Union_of_balls_3<K>::V_triangulation_3* Union_of_balls_3<K>::get_floode
 	return &v_triangulation;
 }
 
+template <class K> 
+typename Union_of_balls_3<K>::Edges_set* Union_of_balls_3<K>::get_medial_axis() {
+	if (!has_medial_edges) {
+		get_flooded_v_triangulation();
+		std::cout << PROGRESS_STATUS << "Collecting medial edges" << std::endl;
+		v_triangulation.collect_medial_edges();
+		std::cout << PROGRESS_DONE << std::endl;
+		has_medial_edges = true;
+	}
+	return &(v_triangulation.medial_edges);
+}
+
+template <class K> 
+std::string* Union_of_balls_3<K>::get_moff_string() {
+	if (!has_moff_string) {
+		std::cout << "get_moff_string" << std::endl;
+		get_angle_filtered_medial_axis();
+		std::cout << PROGRESS_STATUS << "Writing moff string" << std::endl;
+		std::stringstream ss (std::stringstream::in | std::stringstream::out);
+		v_triangulation.write_medial_axis_to_moff(ss, growth_ratio);
+		moff_string = ss.str();
+		std::cout << PROGRESS_DONE << std::endl;
+		has_moff_string = true;
+	}
+	return &moff_string;
+}
+
 //template <class K> 
 //typename Union_of_balls_3<K>::V_triangulation_3* Union_of_balls_3<K>::get_local_filtered_medial_axis() {
 //	if (!has_local_filtered_medial_axis) {
@@ -458,6 +517,57 @@ void  Union_of_balls_3<K>::write_medial_axis_to_off(const std::string& file_name
 }
 
 template <class K> 
+void  Union_of_balls_3<K>::write_less_medial_balls(const std::string& file_name) {
+	get_flooded_v_triangulation();
+	v_triangulation.write_less_medial_balls(file_name);
+}
+
+template <class K> 
+typename  Union_of_balls_3<K>::Polyhedron*  Union_of_balls_3<K>::get_boundary_polyhedron() {
+	if (!has_boundary_surface) {
+		mesh_union_boundary_implicit();
+		has_boundary_surface = true;
+	}
+	return &surface_polyhedron;
+}
+
+template <class K> 
+void Union_of_balls_3<K>::mesh_union_boundary_implicit() {
+	surface_polyhedron.clear();
+	if (alpha_shape->number_of_vertices() < 4) return;
+	//typedef Number_type (Implicit_mesher_layer_3<Union_of_balls_3>::*Function)(Point_3);
+
+	//typedef CGAL::Implicit_surface_3<GT, Function> Surface_3;
+
+	double angle = Application_settings::get_double_setting("implicit-mesher-bound-angle"); angle = angle>30 ? 30 : angle;
+	double radius = Application_settings::get_double_setting("implicit-mesher-bound-radius");
+	double distance = Application_settings::get_double_setting("implicit-mesher-bound-distance");
+
+	std::cout << "Meshing implicit with angle: " << angle << " radius: " << radius << " distance: " << distance << std::endl;
+
+	Tr tr;            // 3D-Delaunay triangulation
+	C2t3 c2t3 (tr);   // 2D-complex in 3D-Delaunay triangulation
+
+	std::cout << PROGRESS_STATUS << "Implicit meshing" << std::endl;
+	// defining the surface
+	Union_surface_3<GT, Union_of_balls_3> surface_struct(alpha_shape, distance);
+	//Surface_3 surface(surface_function, Sphere_3(CGAL::ORIGIN, 2.));
+	radius = radius * surface_struct.bounding_radius;
+	distance = distance * surface_struct.bounding_radius;
+
+	// defining meshing criteria
+	CGAL::Surface_mesh_default_criteria_3<Tr> criteria(angle, radius, distance);
+
+	// meshing surface
+	CGAL::make_surface_mesh(c2t3, surface_struct, criteria, CGAL::Manifold_tag());
+
+	// output to polyhedron
+	CGAL::output_surface_facets_to_polyhedron(c2t3, surface_polyhedron);
+	std::cout << PROGRESS_DONE << std::endl;
+}
+
+
+template <class K> 
 void  Union_of_balls_3<K>::write_simplified_medial_axis_to_off(const std::string& file_name) {
 	get_flooded_v_triangulation();
 	v_triangulation.write_simplified_medial_axis_to_off(file_name);
@@ -466,7 +576,7 @@ void  Union_of_balls_3<K>::write_simplified_medial_axis_to_off(const std::string
 template <class K> 
 void  Union_of_balls_3<K>::write_medial_axis_to_moff(const std::string& file_name) {
 	get_angle_filtered_medial_axis();
-	v_triangulation.write_medial_axis_to_moff(file_name);
+	v_triangulation.write_medial_axis_to_moff(file_name, growth_ratio);
 }
 
 
@@ -551,10 +661,58 @@ void Union_of_balls_3<K>::receive_structure_changed(const std::string& name) {
 	}
 }
 
+template <class K> 
+void Union_of_balls_3<K>::update_ball_scaling() {
+	growth_ratio = Application_settings::get_double_setting("input-balls-scale-factor");
+
+	double squared_scale_input_balls = Application_settings::get_double_setting("input-balls-scale-factor");
+	squared_scale_input_balls = squared_scale_input_balls * squared_scale_input_balls;
+	std::list< Weighted_point > wps;
+	std::list<Point4D>::iterator p_it, p_end = points.end();
+	for (p_it = points.begin(); p_it != p_end; ++p_it) {
+		wps.push_back(Weighted_point(
+			Bare_point(p_it->x,p_it->y,p_it->z),squared_scale_input_balls*p_it->w));
+	}
+	std::cout << LOG_RED << "add_weighted_points point size: " << points.size() << std::endl;
+
+	std::cout << PROGRESS_STATUS << "Building alpha shape" << std::endl;
+	if (alpha_shape != 0) delete alpha_shape;
+	alpha_shape = new Alpha_shape_3(wps.begin(), wps.end(), 
+		Application_settings::get_double_setting("alpha-value-for-dual-of-union-of-balls"), Alpha_shape_3::GENERAL);
+
+	std::cout << PROGRESS_DONE << std::endl;
+
+	// alpha values
+	//int n = alpha_shape.number_of_alphas();
+	//std::cout << "alphas: [";
+	//for (int i=1; i<n; i++) {
+	//	double a = CGAL::to_double(alpha_shape.get_nth_alpha(i));
+	//	if (a>0 && a<10)
+	//		std::cout << a << " ";
+	//}
+	//std::cout << "]" << std::endl;
+
+//	invalidate_cache();
+	has_alpha_shape = true;
+	add_variable("Balls",alpha_shape->number_of_vertices());
+//	std::cout << "balls number in variables: " << alpha_shape.number_of_vertices() << std::endl;
+	emit announce_structure_changed(SHARED_INNER_DOUBLE_BALLS);
+	emit announce_structure_changed(SHARED_SCALE_DOUBLE_BALLS);
+	emit announce_structure_changed(SHARED_MOFF_STRING);
+//	emit do_widget_repaint();
+
+
+}
+
 template <class K>
 void Union_of_balls_3<K>::application_settings_changed(const QString& settings_name) {
+	if (settings_name == "input-balls-scale-factor") {
+		invalidate_cache();
+		update_ball_scaling();
+		emit do_widget_repaint();
+	}
 	if (settings_name == "alpha-value-for-dual-of-union-of-balls") {
-		alpha_shape.set_alpha(Application_settings::get_double_setting("alpha-value-for-dual-of-union-of-balls"));
+		if (alpha_shape) alpha_shape->set_alpha(Application_settings::get_double_setting("alpha-value-for-dual-of-union-of-balls"));
 		invalidate_cache();
 		has_alpha_shape = true;
 		emit do_widget_repaint();
@@ -573,6 +731,20 @@ void Union_of_balls_3<K>::application_settings_changed(const QString& settings_n
 		has_topology_angle_ma = false;
 		emit do_widget_repaint();
 	}
+
+	if (settings_name == "ignore-incomplete-v-voronoi-faces-for-medial-axis") {
+		invalidate_all_layers();
+		has_medial_edges = false;
+		emit do_widget_repaint();
+	}
+
+	if (settings_name=="implicit-mesher-bound-angle" || settings_name=="implicit-mesher-bound-radius" || settings_name=="implicit-mesher-bound-distance") {
+		invalidate_all_layers();
+		has_boundary_surface = false;
+		emit do_widget_repaint();
+	}
+
+		
 }
 
 template <class K> 
@@ -601,5 +773,8 @@ void Union_of_balls_3<K>::invalidate_cache() {
 	has_local_filtered_medial_axis = false;
 	has_scale_filtered_medial_axis = false;
 	has_topology_angle_ma = false;
+	has_medial_edges = false;
+	has_boundary_surface = false;
+	has_moff_string = false;
 //	emit announce_structure_changed(SHARED_INNER_DOUBLE_BALLS);
 }

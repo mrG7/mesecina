@@ -78,6 +78,11 @@ void GL_draw_layer_3::draw() {
 	glLineWidth(line_width);
 	glPointSize(point_size);
 
+	if (!is_prepared) {
+		prepare_draw();
+		is_prepared = true;
+	}
+
 	if (widget->get_use_display_lists() && get_use_display_list()) {
 		if (!cache_has_data){
 			bool old = need_rescale_colormap;
@@ -113,6 +118,7 @@ void GL_draw_layer_3::draw() {
 	glFlush();
 }
 
+
 bool GL_draw_layer_3::has_valid_cache() {
 	return cache_has_data;
 }
@@ -120,6 +126,8 @@ void GL_draw_layer_3::invalidate_cache() {
 	if (widget) {
 		widget->makeCurrent();
 //		std::cout << "deleting display layer from layer " << name.toStdString() << " number " << display_list << std::endl;
+		unprepare();
+		is_prepared = false;
 		if (display_list!=0) glDeleteLists(display_list,1);
 		glDeleteTextures(1, &texture);
 	}

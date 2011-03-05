@@ -1,0 +1,1 @@
+bin\mesecina3d --nogui -mode mesh2balls -settings 240-second-close-mesh.ini -input ..\..\models\scale-axis\3d\%1.off -output out\%1_high.woff >log\log_%1_high.txt

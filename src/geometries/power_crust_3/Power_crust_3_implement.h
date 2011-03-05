@@ -134,6 +134,7 @@ template <class K>
 typename Power_crust_3<K>::Polar_triangulation_3* Power_crust_3<K>::get_polar_triangulation() {
 	if (!has_polar_triangulation) {
 		polar_triangulation.compute_polar_triangulation(get_pole_classified_triangulation());
+		add_variable("Vertices in polar triangulation", polar_triangulation.number_of_vertices());
 		has_polar_triangulation = true;
 	}
 	return &polar_triangulation;

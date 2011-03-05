@@ -1,0 +1,1 @@
+bin\mesecina3d --nogui -mode mesh2balls -settings 25-0.004-0.0008-4-1.ini -input ..\..\models\scale-axis\3d\%1.off -output out\%1_25-0.004-0.0008-4-1.ini.woff >log\mesh2balls_%1_25-0.004-0.0008-4-1.ini.txt

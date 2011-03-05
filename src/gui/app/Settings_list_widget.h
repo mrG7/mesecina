@@ -25,6 +25,7 @@ class Settings_list_widget : public QFrame {
 public:
 	Settings_list_widget(QWidget * parent = 0, QString name = "Statistics");
 	void process_filter();
+	void load_settings_and_emit_change(const QString& file_name);
 
 signals:
 	void closing(bool);

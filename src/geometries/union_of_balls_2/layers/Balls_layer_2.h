@@ -103,16 +103,16 @@ public:
 					*hit = true;
 				}
 			}
-			//for (hv_it = t->hidden_vertices_begin(); hv_it!=hv_end; hv_it++) {
-			//	double px = CGAL::to_double(hv_it->point().x());
-			//	double py = CGAL::to_double(hv_it->point().y());
-			//	if  (xmin <= px && px <= xmax && ymin <= py && py <= ymax && !is_vertex_selected(v_it)) {
-			//		widget->add_point_to_selection(px, py);
-			//		//				Vertex_handle v = *v_it;
-			//		selected_vertices.push_back(hv_it);
-			//		*hit = true;
-			//	}
-			//}
+			for (hv_it = t->hidden_vertices_begin(); hv_it!=hv_end; hv_it++) {
+				double px = CGAL::to_double(hv_it->point().x());
+				double py = CGAL::to_double(hv_it->point().y());
+				if  (xmin <= px && px <= xmax && ymin <= py && py <= ymax && !is_vertex_selected(v_it)) {
+					widget->add_point_to_selection(px, py);
+					//				Vertex_handle v = *v_it;
+					selected_vertices.push_back(hv_it);
+					*hit = true;
+				}
+			}
 				
 		}
 	}
@@ -227,7 +227,7 @@ public:
 
 			update_orig_points();
 			parent->invalidate_cache(true);
-			widget->repaint();
+			widget->repaintGL();
 
 		}
 	}

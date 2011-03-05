@@ -10,6 +10,8 @@ cd ..\moebius_2
 qmake moebius_2.pro -o moebius_2.vcproj
 cd ..\second_voronoi_2
 qmake second_voronoi_2.pro -o second_voronoi_2.vcproj
+cd ..\scale_analysis_2
+qmake scale_analysis_2.pro -o scale_analysis_2.vcproj
 cd ..\witness_2
 qmake witness_2.pro -o witness_2.vcproj
 cd ..\..\..\win
